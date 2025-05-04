@@ -44,7 +44,7 @@ Backlash 2025: Two GOATs. One grudge. No therapy 🧠🔪.`,
     {
       id: 'match3',
       matchTitle: 'Gunther vs Pat McAfee',
-      poster: '/images/GUN.jpg',  // Only poster, no 'image'
+      poster: '/images/ij.jpg',  // Only poster, no 'image'
       prediction: {
         'Gunther': 95,
         'Pat McAfee': 5,
