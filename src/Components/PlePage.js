@@ -1,36 +1,57 @@
-// src/Components/PlePage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { pleData, matchesByPle } from './MatchesData';
 import { Pie } from 'react-chartjs-2';
 import { toast } from 'react-toastify';
 import './CSS/MatchStyles.css';
-
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
 } from 'chart.js';
+import { db } from '../firebaseConfig'; // adjust path as needed
+import {
+  doc,
+  setDoc,
+  increment,
+  onSnapshot,
+
+} from 'firebase/firestore';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PlePage = ({ user }) => {
   const { ple } = useParams();
   const pleInfo = pleData.find((p) => p.id === ple);
-  const matches = matchesByPle[ple] || [];
+
+  // Memoize the matches calculation
+  const matches = useMemo(() => matchesByPle[ple] || [], [ple]);
 
   const [votes, setVotes] = useState({});
   const [votedMatches, setVotedMatches] = useState({});
 
+  // Load votes live from Firestore
   useEffect(() => {
-    const savedVotes = JSON.parse(localStorage.getItem(`votes_${ple}`)) || {};
-    const savedVotedMatches = JSON.parse(localStorage.getItem(`votedMatches_${ple}`)) || {};
-    setVotes(savedVotes);
-    setVotedMatches(savedVotedMatches);
-  }, [ple]);
+    const unsubscribes = [];
 
-  const handleVote = (matchId, wrestler) => {
+    matches.forEach((match) => {
+      const matchRef = doc(db, "votes", ple, "matches", match.id);
+      const unsubscribe = onSnapshot(matchRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setVotes(prev => ({
+            ...prev,
+            [match.id]: docSnap.data()
+          }));
+        }
+      });
+      unsubscribes.push(unsubscribe);
+    });
+
+    return () => unsubscribes.forEach(unsub => unsub());
+  }, [ple, matches]);
+
+  const handleVote = async (matchId, wrestler) => {
     if (!user) {
       toast.error("⚠️ Please Sign In to Vote!", {
         position: "top-center",
@@ -40,28 +61,45 @@ const PlePage = ({ user }) => {
       return;
     }
 
-    const updatedVotes = { ...votes };
-    const updatedVotedMatches = { ...votedMatches };
-
-    if (!updatedVotes[matchId]) {
-      updatedVotes[matchId] = {};
+    if (votedMatches[matchId]) {
+      toast.warn("❗ You've already voted in this match!", {
+        position: "top-center",
+        autoClose: 2500,
+        theme: "colored",
+      });
+      return;
     }
 
-    updatedVotes[matchId][wrestler] = (updatedVotes[matchId][wrestler] || 0) + 1;
-    updatedVotedMatches[matchId] = true;
+    const matchRef = doc(db, "votes", ple, "matches", matchId);
 
-    setVotes(updatedVotes);
-    setVotedMatches(updatedVotedMatches);
+    try {
+      await setDoc(matchRef, { [wrestler]: increment(1) }, { merge: true });
 
-    localStorage.setItem(`votes_${ple}`, JSON.stringify(updatedVotes));
-    localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updatedVotedMatches));
+      setVotedMatches((prev) => {
+        const updated = { ...prev, [matchId]: true };
+        localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
+        return updated;
+      });
 
-    toast.success(`🎉 You voted for ${wrestler}!`, {
-      position: "top-center",
-      autoClose: 2500,
-      theme: "colored",
-    });
+      toast.success(`🎉 You voted for ${wrestler}!`, {
+        position: "top-center",
+        autoClose: 2500,
+        theme: "colored",
+      });
+    } catch (err) {
+      console.error("Error voting:", err);
+      toast.error("⚠️ Failed to vote. Try again.", {
+        position: "top-center",
+        autoClose: 2500,
+        theme: "dark",
+      });
+    }
   };
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem(`votedMatches_${ple}`)) || {};
+    setVotedMatches(saved);
+  }, [ple]);
 
   const generatePieData = (matchVotes) => {
     const labels = Object.keys(matchVotes);
@@ -134,7 +172,7 @@ const PlePage = ({ user }) => {
                 </div>
               ) : (
                 <div style={{ width: '260px', margin: 'auto', marginTop: '30px' }}>
-                  <Pie data={generatePieData(votes[match.id])} />
+                  <Pie data={generatePieData(votes[match.id] || {})} />
                 </div>
               )}
             </div>
