@@ -1,0 +1,70 @@
+/* ShowTimings.css */
+
+/* Grid Layout */
+.show-timings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 0 20px;
+}
+
+/* Individual Show Cards */
+.show-card {
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 25px;
+  background-color: #1a1a1a;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+}
+
+.show-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.08);
+}
+
+/* Show Image */
+.show-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  transition: transform 0.3s ease;
+}
+
+.show-card img:hover {
+  transform: scale(1.05);
+}
+
+/* Show Title */
+.show-card h3 {
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Show Details */
+.show-card p {
+  color: #ccc;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.show-card p:last-child {
+  color: #aaa;
+  font-size: 13px;
+}
+
+/* Disclaimer */
+.disclaimer {
+  margin-top: 40px;
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+  padding: 0 20px;
+}

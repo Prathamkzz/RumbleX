@@ -1,0 +1,33 @@
+.poll-card {
+  display: flex;
+  align-items: center;
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 16px auto;
+  max-width: 450px;
+  gap: 18px;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.poll-card:hover {
+  background-color: #2a2a2a;
+  transform: translateY(-2px);
+}
+
+.poll-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid #333;
+}
+
+.poll-text {
+  font-size: 16px;
+  color: #f1f1f1;
+  font-weight: 500;
+  flex: 1;
+}

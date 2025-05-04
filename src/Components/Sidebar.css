@@ -1,0 +1,63 @@
+/* Sidebar Container */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #202123;
+    position: fixed;
+    top: 0;
+    left: -250px; /* Initially hide the sidebar */
+    transition: left 0.3s ease; /* Add smooth transition */
+    z-index: 999;
+    color: white;
+    padding: 20px;
+  }
+  
+  /* When Sidebar is Open */
+  .sidebar.open {
+    left: 0; /* Slide sidebar in */
+  }
+  
+  /* Sidebar Header */
+  .sidebar h4 {
+    font-size: 1.5rem;
+    color: #fff;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Sidebar Links */
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sidebar ul li {
+    margin: 15px 0;
+  }
+  
+  .sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Hover effect for links */
+  .sidebar ul li a:hover {
+    background-color: #3a3f44;
+  }
+  
+  /* Close Button for Sidebar (if you need it) */
+  .sidebar .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  

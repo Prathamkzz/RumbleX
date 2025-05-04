@@ -1,0 +1,92 @@
+/* Main container styling */
+.countdown-timer {
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+  color: white;
+  background-color: #111;
+  border-radius: 15px;
+  padding: 35px;
+  width: 85%;
+  max-width: 700px;
+  margin: 30px auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease;
+}
+
+.countdown-timer:hover {
+  background-color: #1b1b1b;
+}
+
+/* Title styling */
+.countdown-timer h2 {
+  font-size: 26px;
+  margin-bottom: 25px;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+/* Countdown display styling */
+.countdown-display {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+/* Countdown item (Days, Hours, Minutes, Seconds) */
+.countdown-item {
+  text-align: center;
+}
+
+.countdown-item span {
+  font-size: 60px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #ff6347;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0);
+}
+
+.countdown-item p {
+  font-size: 16px;
+  color: #aaa;
+}
+
+/* Progress bar container */
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background-color: #333;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+/* Progress bar fill (color changes based on time remaining) */
+.progress-bar-fill {
+  height: 100%;
+  background-color: #00bcd4;
+  transition: width 1s ease-out;
+  border-radius: 6px 0 0 6px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .countdown-timer {
+    padding: 20px;
+    width: 90%;
+  }
+
+  .countdown-display {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .countdown-item span {
+    font-size: 50px;
+  }
+
+  .progress-bar {
+    height: 8px;
+  }
+}

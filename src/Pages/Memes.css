@@ -1,0 +1,115 @@
+/* Main container for the memes section */
+.memes-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  background-color: #121212; /* Dark background to match the theme */
+  min-height: 100vh;
+}
+
+/* Grid layout for meme cards */
+.memes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Auto-adjust columns based on screen size */
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Individual meme card styling */
+.meme-card {
+  background-color: #1c1c1c;
+  border-radius: 12px;
+  overflow: hidden;
+  color: #fff;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+/* Hover effect for meme cards */
+.meme-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Image inside meme card */
+.meme-card img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* Meme actions (like and dislike buttons) */
+.meme-actions {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 15px;
+}
+
+.like-button,
+.dislike-button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.like-button.liked {
+  color: #ff4d4d; /* Red for liked */
+}
+
+.dislike-button.disliked {
+  color: #4d79ff; /* Blue for disliked */
+}
+
+/* Sorting options container */
+.sort-options {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #333;
+  border-radius: 12px;
+  padding: 15px;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Sort options buttons */
+.sort-options button {
+  background-color: #444;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin: 5px 0;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for sort buttons */
+.sort-options button:hover {
+  background-color: #555;
+}
+
+/* Search input styling */
+input[type="text"] {
+  padding: 12px;
+  margin: 25px 0;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: white;
+  width: 280px;
+  transition: background-color 0.3s ease;
+}
+
+/* Focus effect for the search input */
+input[type="text"]:focus {
+  background-color: #333;
+  outline: none;
+}
