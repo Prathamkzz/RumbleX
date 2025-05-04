@@ -163,7 +163,7 @@ export default function PLELiveDashboard() {
 
   return (
     <div className="dashboard-container">
-      <h2 className="dashboard-title">Live Dashboard: {pleId}</h2>
+      <h2 className="dashboard-title">Backlash</h2>
 
       {!isLive && (
         <div className="countdown">
