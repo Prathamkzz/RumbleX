@@ -1,8 +1,8 @@
 
 // PLE Data
 export const pleData = [
-  { id: 'ple1', name: 'Backlash', image: '/images/backlash.jpg', areMatchesAnnounced: true },
-  { id: 'ple2', name: 'Money In The Bank', image: '/images/mitb.webp', areMatchesAnnounced: false },
+  { id: 'ple1', name: 'Backlash', image: '/images/Backlash.jpg', areMatchesAnnounced: true },
+  { id: 'ple2', name: 'Money In The Bank', image: '/images/MITB.webp', areMatchesAnnounced: false },
   { id: 'ple3', name: 'SummerSlam', image: '/images/SummerSlam.jpg', areMatchesAnnounced: false },
   { id: 'ple4', name: 'Clash In Paris', image: '/images/CIP.jpg', areMatchesAnnounced: false },
   { id: 'ple5', name: 'Survivor Series', image: '/images/SSERIES.jpg', areMatchesAnnounced: false },
