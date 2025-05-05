@@ -3,27 +3,38 @@ import './BattleZonePage.css';
 import battleZoneMatches from './BattleZoneData';
 import { toast } from 'react-toastify';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 
 const BattlezonePage = () => {
   const [votes, setVotes] = useState({});
   const [votedMatches, setVotedMatches] = useState({});
   const [isUserSignedIn, setIsUserSignedIn] = useState(false);
+  const db = getFirestore();
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsUserSignedIn(!!user); // true if user exists
+      setIsUserSignedIn(!!user);
     });
 
-    const savedVotes = JSON.parse(localStorage.getItem('votes_battlezone')) || {};
+    const fetchVotes = async () => {
+      const matchVotesSnapshot = await getDocs(collection(db, 'votes', 'battlezone', 'matches'));
+      const newVotes = {};
+      matchVotesSnapshot.forEach((docSnap) => {
+        newVotes[docSnap.id] = docSnap.data();
+      });
+      setVotes(newVotes);
+    };
+
+    fetchVotes();
+
     const savedVotedMatches = JSON.parse(localStorage.getItem('voted_battlezone')) || {};
-    setVotes(savedVotes);
     setVotedMatches(savedVotedMatches);
 
-    return () => unsubscribe(); // clean up
-  }, []);
+    return () => unsubscribe();
+  }, [db]);
 
-  const handleVote = (matchId, option, wrestler) => {
+  const handleVote = async (matchId, option, wrestler) => {
     if (!isUserSignedIn) {
       toast.error("⚠️ Please Sign In to Vote!", {
         position: "top-center",
@@ -37,27 +48,36 @@ const BattlezonePage = () => {
       return;
     }
 
-    const updatedVotes = { ...votes };
-    const updatedVotedMatches = { ...votedMatches };
+    try {
+      const matchRef = doc(db, 'votes', 'battlezone', 'matches', matchId);
+      const matchSnap = await getDoc(matchRef);
 
-    if (!updatedVotes[matchId]) {
-      updatedVotes[matchId] = { A: 0, B: 0 };
+      if (!matchSnap.exists()) {
+        toast.error("Match data not found!");
+        return;
+      }
+
+      const matchData = matchSnap.data();
+      matchData[option] = (matchData[option] || 0) + 1;
+
+      await updateDoc(matchRef, matchData);
+
+      const updatedVotes = { ...votes, [matchId]: matchData };
+      const updatedVotedMatches = { ...votedMatches, [matchId]: true };
+
+      setVotes(updatedVotes);
+      setVotedMatches(updatedVotedMatches);
+      localStorage.setItem('voted_battlezone', JSON.stringify(updatedVotedMatches));
+
+      toast.success(`🎉 You voted for ${wrestler}!`, {
+        position: "top-center",
+        autoClose: 2500,
+        theme: "colored",
+      });
+    } catch (error) {
+      console.error("Error voting:", error);
+      toast.error("Something went wrong!");
     }
-
-    updatedVotes[matchId][option]++;
-    updatedVotedMatches[matchId] = true;
-
-    setVotes(updatedVotes);
-    setVotedMatches(updatedVotedMatches);
-
-    localStorage.setItem('votes_battlezone', JSON.stringify(updatedVotes));
-    localStorage.setItem('voted_battlezone', JSON.stringify(updatedVotedMatches));
-
-    toast.success(`🎉 You voted for ${wrestler}!`, {
-      position: "top-center",
-      autoClose: 2500,
-      theme: "colored",
-    });
   };
 
   const getLeaderboard = () => {
@@ -103,8 +123,7 @@ const BattlezonePage = () => {
             </div>
           ) : (
             <div className="vote-results">
-              <p>{match.optionA}: Voted</p>
-              <p>{match.optionB}: Voted</p>
+              <p>✅ You voted in this match</p>
             </div>
           )}
         </div>

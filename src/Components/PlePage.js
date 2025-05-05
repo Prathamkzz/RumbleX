@@ -1,76 +1,64 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { pleData, matchesByPle } from './MatchesData';
-import { Pie } from 'react-chartjs-2';
 import { toast } from 'react-toastify';
 import './CSS/MatchStyles.css';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { db } from '../firebaseConfig'; // adjust path as needed
+import { db } from '../firebaseConfig';
 import {
   doc,
   setDoc,
   increment,
   onSnapshot,
-
 } from 'firebase/firestore';
-
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PlePage = ({ user }) => {
   const { ple } = useParams();
   const pleInfo = pleData.find((p) => p.id === ple);
 
-  // Memoize the matches calculation
   const matches = useMemo(() => matchesByPle[ple] || [], [ple]);
 
   const [votes, setVotes] = useState({});
   const [votedMatches, setVotedMatches] = useState({});
 
-  // Load votes live from Firestore
   useEffect(() => {
     const unsubscribes = [];
 
     matches.forEach((match) => {
-      const matchRef = doc(db, "votes", ple, "matches", match.id);
+      const matchRef = doc(db, 'votes', ple, 'matches', match.id);
       const unsubscribe = onSnapshot(matchRef, (docSnap) => {
         if (docSnap.exists()) {
-          setVotes(prev => ({
+          setVotes((prev) => ({
             ...prev,
-            [match.id]: docSnap.data()
+            [match.id]: docSnap.data(),
           }));
         }
       });
       unsubscribes.push(unsubscribe);
     });
 
-    return () => unsubscribes.forEach(unsub => unsub());
+    return () => unsubscribes.forEach((unsub) => unsub());
   }, [ple, matches]);
 
   const handleVote = async (matchId, wrestler) => {
     if (!user) {
-      toast.error("⚠️ Please Sign In to Vote!", {
-        position: "top-center",
+      toast.error('⚠️ Please Sign In to Vote!', {
+        position: 'top-center',
         autoClose: 3000,
-        theme: "dark",
+        theme: 'dark',
       });
       return;
     }
 
     if (votedMatches[matchId]) {
       toast.warn("❗ You've already voted in this match!", {
-        position: "top-center",
+        position: 'top-center',
         autoClose: 2500,
-        theme: "colored",
+        theme: 'colored',
       });
       return;
     }
 
-    const matchRef = doc(db, "votes", ple, "matches", matchId);
+    const matchRef = doc(db, 'votes', ple, 'matches', matchId);
 
     try {
       await setDoc(matchRef, { [wrestler]: increment(1) }, { merge: true });
@@ -82,16 +70,16 @@ const PlePage = ({ user }) => {
       });
 
       toast.success(`🎉 You voted for ${wrestler}!`, {
-        position: "top-center",
+        position: 'top-center',
         autoClose: 2500,
-        theme: "colored",
+        theme: 'colored',
       });
     } catch (err) {
-      console.error("Error voting:", err);
-      toast.error("⚠️ Failed to vote. Try again.", {
-        position: "top-center",
+      console.error('Error voting:', err);
+      toast.error('⚠️ Failed to vote. Try again.', {
+        position: 'top-center',
         autoClose: 2500,
-        theme: "dark",
+        theme: 'dark',
       });
     }
   };
@@ -100,21 +88,6 @@ const PlePage = ({ user }) => {
     const saved = JSON.parse(localStorage.getItem(`votedMatches_${ple}`)) || {};
     setVotedMatches(saved);
   }, [ple]);
-
-  const generatePieData = (matchVotes) => {
-    const labels = Object.keys(matchVotes);
-    const data = Object.values(matchVotes);
-
-    return {
-      labels,
-      datasets: [
-        {
-          data,
-          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-        },
-      ],
-    };
-  };
 
   return (
     <div style={{ textAlign: 'center', marginTop: '40px' }}>
@@ -171,8 +144,10 @@ const PlePage = ({ user }) => {
                   ))}
                 </div>
               ) : (
-                <div style={{ width: '260px', margin: 'auto', marginTop: '30px' }}>
-                  <Pie data={generatePieData(votes[match.id] || {})} />
+                <div style={{ marginTop: '30px' }}>
+                  <Link to={`/our-predictions/${ple}`} style={{ color: '#36A2EB', textDecoration: 'none', fontWeight: 'bold' }}>
+                    ✅ Voted — Now See Our Predictions
+                  </Link>
                 </div>
               )}
             </div>
