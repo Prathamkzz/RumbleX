@@ -73,6 +73,20 @@ Backlash 2025: Two GOATs. One grudge. No therapy 🧠🔪.`,
       },
       backstory: 'Jacob Fatu wins a belt 🏆, instantly gets hunted by 3 sweaty dudes with rage issues 😤💀. Solo’s mad, Aldis is stressed, and Backlash is basically WWE’s group therapy session with punches 🧠🩸. Title on the line, sanity not included 🤡🔥.'
     },
+    {
+      id: 'match4',
+      matchTitle: 'Dominik Mysterio vs Penta',
+      poster: '/images/pd.jpg',  // Only poster, no 'image'
+      prediction: {
+        'Dominik Mysterio': 85,
+        'Penta': 15,
+      },
+      wrestlerImages: {
+        'Dominik Mysterio': '/images/dom.png',
+        'Penta': '/images/pen.png',
+      },
+      backstory: 'Dom vs Penta 💀🥷 Dom wanted Penta in his emo gang. Penta said “die.” 😵 Dom stole gold. JD saved his mascara. 🖤Now Penta’s coming… with violence. 🧨👊'
+    },
   ],
 
   ple2: [],  // Money in the Bank (empty, can be filled later)
