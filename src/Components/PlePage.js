@@ -1,61 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { pleData, matchesByPle } from './MatchesData';
+import { pleData, matchesByPle } from './MatchesData'; // Import static data
 import { toast } from 'react-toastify';
 import './CSS/MatchStyles.css';
-import { db } from '../firebaseConfig';
-import {
-  doc,
-  setDoc,
-  increment,
-  onSnapshot,
-  collection, // ✅ THIS IS WHAT YOU MISSED
-} from 'firebase/firestore';
-
 
 const PlePage = ({ user }) => {
   const { ple } = useParams();
   const pleInfo = pleData.find((p) => p.id === ple);
 
-  const [matches, setMatches] = useState([]);
+  // Matches are loaded directly from the static data
+  const matches = useMemo(() => matchesByPle[ple] || [], [ple]);
 
-useEffect(() => {
-  const unsubscribe = onSnapshot(
-    collection(db, 'matches', ple, 'matchList'),
-    (snapshot) => {
-      const fetchedMatches = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setMatches(fetchedMatches);
-    }
-  );
-
-  return () => unsubscribe();
-}, [ple]);
-
-
-  const [votes, setVotes] = useState({});
   const [votedMatches, setVotedMatches] = useState({});
 
   useEffect(() => {
-    const unsubscribes = [];
-
-    matches.forEach((match) => {
-      const matchRef = doc(db, 'votes', ple, 'matches', match.id);
-      const unsubscribe = onSnapshot(matchRef, (docSnap) => {
-        if (docSnap.exists()) {
-          setVotes((prev) => ({
-            ...prev,
-            [match.id]: docSnap.data(),
-          }));
-        }
-      });
-      unsubscribes.push(unsubscribe);
-    });
-
-    return () => unsubscribes.forEach((unsub) => unsub());
-  }, [ple, matches]);
+    const saved = JSON.parse(localStorage.getItem(`votedMatches_${ple}`)) || {};
+    setVotedMatches(saved);
+  }, [ple]);
 
   const handleVote = async (matchId, wrestler) => {
     if (!user) {
@@ -76,36 +37,18 @@ useEffect(() => {
       return;
     }
 
-    const matchRef = doc(db, 'votes', ple, 'matches', matchId);
+    setVotedMatches((prev) => {
+      const updated = { ...prev, [matchId]: true };
+      localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
+      return updated;
+    });
 
-    try {
-      await setDoc(matchRef, { [wrestler]: increment(1) }, { merge: true });
-
-      setVotedMatches((prev) => {
-        const updated = { ...prev, [matchId]: true };
-        localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
-        return updated;
-      });
-
-      toast.success(`🎉 You voted for ${wrestler}!`, {
-        position: 'top-center',
-        autoClose: 2500,
-        theme: 'colored',
-      });
-    } catch (err) {
-      console.error('Error voting:', err);
-      toast.error('⚠️ Failed to vote. Try again.', {
-        position: 'top-center',
-        autoClose: 2500,
-        theme: 'dark',
-      });
-    }
+    toast.success(`🎉 You voted for ${wrestler}!`, {
+      position: 'top-center',
+      autoClose: 2500,
+      theme: 'colored',
+    });
   };
-
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(`votedMatches_${ple}`)) || {};
-    setVotedMatches(saved);
-  }, [ple]);
 
   return (
     <div style={{ textAlign: 'center', marginTop: '40px' }}>
