@@ -12,7 +12,7 @@ const BattlezonePage = () => {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsUserSignedIn(!!user); // true if user exists
+      setIsUserSignedIn(!!user);
     });
 
     const savedVotes = JSON.parse(localStorage.getItem('votes_battlezone')) || {};
@@ -20,7 +20,7 @@ const BattlezonePage = () => {
     setVotes(savedVotes);
     setVotedMatches(savedVotedMatches);
 
-    return () => unsubscribe(); // clean up
+    return () => unsubscribe();
   }, []);
 
   const handleVote = (matchId, option, wrestler) => {
@@ -33,9 +33,7 @@ const BattlezonePage = () => {
       return;
     }
 
-    if (votedMatches[matchId]) {
-      return;
-    }
+    if (votedMatches[matchId]) return;
 
     const updatedVotes = { ...votes };
     const updatedVotedMatches = { ...votedMatches };
@@ -45,7 +43,7 @@ const BattlezonePage = () => {
     }
 
     updatedVotes[matchId][option]++;
-    updatedVotedMatches[matchId] = true;
+    updatedVotedMatches[matchId] = option;
 
     setVotes(updatedVotes);
     setVotedMatches(updatedVotedMatches);
@@ -60,7 +58,6 @@ const BattlezonePage = () => {
     });
   };
 
-  // Calculate the percentage of votes for each option in the match
   const getVotePercentages = (matchId) => {
     const matchVotes = votes[matchId];
     if (!matchVotes) return { A: 0, B: 0 };
@@ -77,34 +74,59 @@ const BattlezonePage = () => {
       <h2>WWE FAN BATTLEZONE</h2>
       <p>Vote for your favorites!</p>
 
-      {battleZoneMatches.map((match) => (
-        <div key={match.id} className="match-card">
-          <h3>{match.title}</h3>
-          <div className="vote-row">
-            <div>
-              <img src={match.imgA} alt={match.optionA} />
-              <button onClick={() => handleVote(match.id, 'A', match.optionA)}>Vote {match.optionA}</button>
-            </div>
-            <div>
-              <img src={match.imgB} alt={match.optionB} />
-              <button onClick={() => handleVote(match.id, 'B', match.optionB)}>Vote {match.optionB}</button>
-            </div>
-          </div>
+      {battleZoneMatches.map((match) => {
+        const percentages = getVotePercentages(match.id);
+        const userVote = votedMatches[match.id];
 
-          {votedMatches[match.id] && (
-            <div className="vote-results">
-              <p>{match.optionA}: Voted</p>
-              <p>{match.optionB}: Voted</p>
-
-              {/* Show percentages only after voting */}
-              <div className="vote-percentages">
-                <p>{match.optionA}: {getVotePercentages(match.id).A.toFixed(2)}%</p>
-                <p>{match.optionB}: {getVotePercentages(match.id).B.toFixed(2)}%</p>
+        return (
+          <div key={match.id} className="match-card">
+            <h3>{match.title}</h3>
+            <div className="vote-row">
+              <div>
+                <img src={match.imgA} alt={match.optionA} />
+                <button
+                  onClick={() => handleVote(match.id, 'A', match.optionA)}
+                  disabled={!!userVote}
+                >
+                  Vote {match.optionA}
+                </button>
+              </div>
+              <div>
+                <img src={match.imgB} alt={match.optionB} />
+                <button
+                  onClick={() => handleVote(match.id, 'B', match.optionB)}
+                  disabled={!!userVote}
+                >
+                  Vote {match.optionB}
+                </button>
               </div>
             </div>
-          )}
-        </div>
-      ))}
+
+            {userVote && (
+              <div className="vote-results">
+                <h4>Results:</h4>
+                <div className="vote-percentages">
+                  <div className={`vote-option ${userVote === 'A' ? 'voted' : ''}`}>
+                    <p>{match.optionA}</p>
+                    <div className="percentage-bar">
+                      <div className="filled" style={{ width: `${percentages.A}%` }} />
+                    </div>
+                    <span>{percentages.A.toFixed(1)}%</span>
+                  </div>
+
+                  <div className={`vote-option ${userVote === 'B' ? 'voted' : ''}`}>
+                    <p>{match.optionB}</p>
+                    <div className="percentage-bar">
+                      <div className="filled" style={{ width: `${percentages.B}%` }} />
+                    </div>
+                    <span>{percentages.B.toFixed(1)}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
