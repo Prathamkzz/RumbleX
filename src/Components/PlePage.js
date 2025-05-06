@@ -1,24 +1,29 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { pleData, matchesByPle } from './MatchesData'; // Import static data
+import { pleData, matchesByPle } from './MatchesData';
 import { toast } from 'react-toastify';
 import './CSS/MatchStyles.css';
 
 const PlePage = ({ user }) => {
   const { ple } = useParams();
   const pleInfo = pleData.find((p) => p.id === ple);
-
-  // Matches are loaded directly from the static data
-  const matches = useMemo(() => matchesByPle[ple] || [], [ple]);
+  const matches = matchesByPle[ple] || [];
 
   const [votedMatches, setVotedMatches] = useState({});
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem(`votedMatches_${ple}`)) || {};
-    setVotedMatches(saved);
-  }, [ple]);
+    const validMatchIds = matches.map((m) => m.id);
 
-  const handleVote = async (matchId, wrestler) => {
+    const cleaned = {};
+    for (const id of validMatchIds) {
+      if (saved[id]) cleaned[id] = true;
+    }
+
+    setVotedMatches(cleaned);
+  }, [ple, matches]);
+
+  const handleVote = (matchId, wrestler) => {
     if (!user) {
       toast.error('⚠️ Please Sign In to Vote!', {
         position: 'top-center',
@@ -27,7 +32,7 @@ const PlePage = ({ user }) => {
       });
       return;
     }
-  
+
     if (votedMatches[matchId]) {
       toast.warn("❗ You've already voted in this match!", {
         position: 'top-center',
@@ -36,23 +41,18 @@ const PlePage = ({ user }) => {
       });
       return;
     }
-  
-    // 1. Show success message first
+
+    // Save vote to local state
+    const updated = { ...votedMatches, [matchId]: true };
+    setVotedMatches(updated);
+    localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
+
     toast.success(`🎉 You voted for ${wrestler}!`, {
       position: 'top-center',
       autoClose: 2500,
       theme: 'colored',
-      onClose: () => {
-        // 2. THEN update state after toast finishes
-        setVotedMatches((prev) => {
-          const updated = { ...prev, [matchId]: true };
-          localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
-          return updated;
-        });
-      }
     });
   };
-  
 
   return (
     <div style={{ textAlign: 'center', marginTop: '40px' }}>
@@ -110,7 +110,14 @@ const PlePage = ({ user }) => {
                 </div>
               ) : (
                 <div style={{ marginTop: '30px' }}>
-                  <Link to={`/our-predictions/${ple}`} style={{ color: '#36A2EB', textDecoration: 'none', fontWeight: 'bold' }}>
+                  <Link
+                    to={`/our-predictions/${ple}`}
+                    style={{
+                      color: '#36A2EB',
+                      textDecoration: 'none',
+                      fontWeight: 'bold',
+                    }}
+                  >
                     ✅ Voted — Now See Our Predictions
                   </Link>
                 </div>
