@@ -11,7 +11,7 @@ const PlePage = ({ user }) => {
 
   const [votedMatches, setVotedMatches] = useState({});
 
-  // ✅ Load vote history safely from localStorage
+  // Load vote history from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`votedMatches_${ple}`);
     try {
@@ -24,7 +24,7 @@ const PlePage = ({ user }) => {
     }
   }, [ple]);
 
-  const handleVote = async (matchId, wrestler) => {
+  const handleVote = (matchId, wrestler) => {
     if (!user) {
       toast.error('⚠️ Please Sign In to Vote!', {
         position: 'top-center',
@@ -34,7 +34,8 @@ const PlePage = ({ user }) => {
       return;
     }
 
-    if (votedMatches[matchId]) {
+    // Prevent double vote
+    if (votedMatches[matchId] === true) {
       toast.warn("❗ You've already voted in this match!", {
         position: 'top-center',
         autoClose: 2500,
@@ -43,13 +44,10 @@ const PlePage = ({ user }) => {
       return;
     }
 
-    // Here you can optionally call Firebase if needed
-
-    setVotedMatches((prev) => {
-      const updated = { ...prev, [matchId]: true };
-      localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
-      return updated;
-    });
+    // Update localStorage
+    const updated = { ...votedMatches, [matchId]: true };
+    localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
+    setVotedMatches(updated);
 
     toast.success(`🎉 You voted for ${wrestler}!`, {
       position: 'top-center',
@@ -63,7 +61,9 @@ const PlePage = ({ user }) => {
       <h2 style={{ color: 'white', marginBottom: '20px' }}>{pleInfo?.name}</h2>
 
       {matches.length === 0 ? (
-        <p style={{ color: '#ccc' }}>😔 Oops! Matches for this PLE aren't announced yet.</p>
+        <p style={{ color: '#ccc' }}>
+          😔 Oops! Matches for this PLE aren't announced yet.
+        </p>
       ) : (
         <div
           style={{
@@ -74,60 +74,64 @@ const PlePage = ({ user }) => {
             padding: '40px',
           }}
         >
-          {matches.map((match) => (
-            <div
-              key={match.id}
-              style={{
-                background: '#111',
-                padding: '20px',
-                borderRadius: '12px',
-                maxWidth: '400px',
-                width: '100%',
-              }}
-            >
-              <Link to={`/match/${ple}/${match.id}`}>
-                <img
-                  src={match.poster}
-                  alt={match.matchTitle}
-                  className="match-poster"
-                />
-              </Link>
+          {matches.map((match) => {
+            const hasVoted = votedMatches[match.id] === true;
 
-              <h3 style={{ color: 'white', marginTop: '10px' }}>{match.matchTitle}</h3>
+            return (
+              <div
+                key={match.id}
+                style={{
+                  background: '#111',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  maxWidth: '400px',
+                  width: '100%',
+                }}
+              >
+                <Link to={`/match/${ple}/${match.id}`}>
+                  <img
+                    src={match.poster}
+                    alt={match.matchTitle}
+                    className="match-poster"
+                  />
+                </Link>
 
-              {votedMatches[match.id] !== true ? (
-                <div style={{ marginTop: '20px' }}>
-                  {Object.keys(match.prediction).map((wrestler) => (
-                    <div
-                      key={wrestler}
-                      className="poll-card"
-                      onClick={() => handleVote(match.id, wrestler)}
+                <h3 style={{ color: 'white', marginTop: '10px' }}>{match.matchTitle}</h3>
+
+                {!hasVoted ? (
+                  <div style={{ marginTop: '20px' }}>
+                    {Object.keys(match.prediction).map((wrestler) => (
+                      <div
+                        key={wrestler}
+                        className="poll-card"
+                        onClick={() => handleVote(match.id, wrestler)}
+                      >
+                        <img
+                          src={match.wrestlerImages?.[wrestler]}
+                          alt={wrestler}
+                          className="poll-image"
+                        />
+                        <span className="poll-text">{wrestler}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '30px' }}>
+                    <Link
+                      to={`/our-predictions/${ple}`}
+                      style={{
+                        color: '#36A2EB',
+                        textDecoration: 'none',
+                        fontWeight: 'bold',
+                      }}
                     >
-                      <img
-                        src={match.wrestlerImages?.[wrestler]}
-                        alt={wrestler}
-                        className="poll-image"
-                      />
-                      <span className="poll-text">{wrestler}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ marginTop: '30px' }}>
-                  <Link
-                    to={`/our-predictions/${ple}`}
-                    style={{
-                      color: '#36A2EB',
-                      textDecoration: 'none',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    ✅ Voted — Now See Our Predictions
-                  </Link>
-                </div>
-              )}
-            </div>
-          ))}
+                      ✅ Voted — Now See Our Predictions
+                    </Link>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
