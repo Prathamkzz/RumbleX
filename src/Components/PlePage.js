@@ -116,18 +116,19 @@ const PlePage = ({ user }) => {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ marginTop: '30px' }}>
-                    <Link
-                      to={`/our-predictions/${ple}`}
-                      style={{
-                        color: '#36A2EB',
-                        textDecoration: 'none',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      ✅ Voted — Now See Our Predictions
-                    </Link>
+                  <div style={{
+                    marginTop: '20px',
+                    backgroundColor: '#1e1e1e',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #444',
+                    color: '#0f0',
+                    fontSize: '15px',
+                    fontWeight: '600'
+                  }}>
+                    ✅ Voted — Now See Our Predictions
                   </div>
+                  
                 )}
               </div>
             );
