@@ -9,13 +9,31 @@ import {
   setDoc,
   increment,
   onSnapshot,
+  collection, // ✅ THIS IS WHAT YOU MISSED
 } from 'firebase/firestore';
+
 
 const PlePage = ({ user }) => {
   const { ple } = useParams();
   const pleInfo = pleData.find((p) => p.id === ple);
 
-  const matches = useMemo(() => matchesByPle[ple] || [], [ple]);
+  const [matches, setMatches] = useState([]);
+
+useEffect(() => {
+  const unsubscribe = onSnapshot(
+    collection(db, 'matches', ple, 'matchList'),
+    (snapshot) => {
+      const fetchedMatches = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMatches(fetchedMatches);
+    }
+  );
+
+  return () => unsubscribe();
+}, [ple]);
+
 
   const [votes, setVotes] = useState({});
   const [votedMatches, setVotedMatches] = useState({});
