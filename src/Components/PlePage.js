@@ -11,19 +11,20 @@ const PlePage = ({ user }) => {
 
   const [votedMatches, setVotedMatches] = useState({});
 
+  // ✅ Load vote history safely from localStorage
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(`votedMatches_${ple}`)) || {};
-    const validMatchIds = matches.map((m) => m.id);
-
-    const cleaned = {};
-    for (const id of validMatchIds) {
-      if (saved[id]) cleaned[id] = true;
+    const saved = localStorage.getItem(`votedMatches_${ple}`);
+    try {
+      const parsed = saved ? JSON.parse(saved) : {};
+      setVotedMatches(parsed);
+    } catch (err) {
+      console.error("Broken localStorage data — cleared");
+      localStorage.removeItem(`votedMatches_${ple}`);
+      setVotedMatches({});
     }
+  }, [ple]);
 
-    setVotedMatches(cleaned);
-  }, [ple, matches]);
-
-  const handleVote = (matchId, wrestler) => {
+  const handleVote = async (matchId, wrestler) => {
     if (!user) {
       toast.error('⚠️ Please Sign In to Vote!', {
         position: 'top-center',
@@ -42,10 +43,13 @@ const PlePage = ({ user }) => {
       return;
     }
 
-    // Save vote to local state
-    const updated = { ...votedMatches, [matchId]: true };
-    setVotedMatches(updated);
-    localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
+    // Here you can optionally call Firebase if needed
+
+    setVotedMatches((prev) => {
+      const updated = { ...prev, [matchId]: true };
+      localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
+      return updated;
+    });
 
     toast.success(`🎉 You voted for ${wrestler}!`, {
       position: 'top-center',
@@ -91,7 +95,7 @@ const PlePage = ({ user }) => {
 
               <h3 style={{ color: 'white', marginTop: '10px' }}>{match.matchTitle}</h3>
 
-              {!votedMatches[match.id] ? (
+              {votedMatches[match.id] !== true ? (
                 <div style={{ marginTop: '20px' }}>
                   {Object.keys(match.prediction).map((wrestler) => (
                     <div
