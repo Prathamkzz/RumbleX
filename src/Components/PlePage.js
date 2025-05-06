@@ -27,7 +27,7 @@ const PlePage = ({ user }) => {
       });
       return;
     }
-
+  
     if (votedMatches[matchId]) {
       toast.warn("❗ You've already voted in this match!", {
         position: 'top-center',
@@ -36,19 +36,23 @@ const PlePage = ({ user }) => {
       });
       return;
     }
-
-    setVotedMatches((prev) => {
-      const updated = { ...prev, [matchId]: true };
-      localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
-      return updated;
-    });
-
+  
+    // 1. Show success message first
     toast.success(`🎉 You voted for ${wrestler}!`, {
       position: 'top-center',
       autoClose: 2500,
       theme: 'colored',
+      onClose: () => {
+        // 2. THEN update state after toast finishes
+        setVotedMatches((prev) => {
+          const updated = { ...prev, [matchId]: true };
+          localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
+          return updated;
+        });
+      }
     });
   };
+  
 
   return (
     <div style={{ textAlign: 'center', marginTop: '40px' }}>
