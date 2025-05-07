@@ -207,7 +207,8 @@ function App() {
           <Route path="/news/:slug/detail" element={<NewsDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
-          <Route path="/battlezone" element={<BattlezonePage />} />
+          <Route path="/battlezone" element={<BattlezonePage isSignedIn={!!user} user={user} />} />
+
           <Route path="/match/:pleId/:matchId" element={<MatchDetails />} />
           
           <Route path="/live-ples/:pleId" element={<PleLiveDashboard />} />
