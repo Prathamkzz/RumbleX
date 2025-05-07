@@ -1,63 +1,138 @@
-import React, { useState } from 'react';
-import battlezoneMatches from '../Components/BattleZoneData';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect, useState } from 'react';
 import './BattleZonePage.css';
 
-const BattlezonePage = ({ isSignedIn }) => {
+import battleZoneMatches from './BattleZoneData';
+import { toast } from 'react-toastify';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { db } from '../firebaseConfig';
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  setDoc,
+  collection,
+  increment,
+} from 'firebase/firestore';
+
+const BattlezonePage = () => {
   const [votes, setVotes] = useState({});
-  const [hasVoted, setHasVoted] = useState({});
-  const iAdmin = false;
+  const [votedMatches, setVotedMatches] = useState({});
+  const [isUserSignedIn, setIsUserSignedIn] = useState(false);
 
-  const handleVote = (matchId, option) => {
-    if (!isSignedIn) {
-      toast.error('Please sign in to vote');
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsUserSignedIn(!!user);
+    });
+
+    const savedVotes = JSON.parse(localStorage.getItem('votes_battlezone')) || {};
+    const savedVotedMatches = JSON.parse(localStorage.getItem('voted_battlezone')) || {};
+    setVotes(savedVotes);
+    setVotedMatches(savedVotedMatches);
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleVote = async (matchId, option, match) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+  
+    if (!user) {
+      toast.error("⚠️ Please Sign In to Vote!", {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
       return;
     }
-
-    if (hasVoted[matchId]) {
-      toast.warning('You already voted in this match');
+  
+    const userId = user.uid;
+    const matchRef = doc(db, 'votes_battlezone_matches', matchId);
+    const votedUsersRef = collection(matchRef, 'votedUsers');
+    const userVoteDoc = doc(votedUsersRef, userId);
+  
+    const userVoteSnapshot = await getDoc(userVoteDoc);
+    if (userVoteSnapshot.exists()) {
+      toast.error("⚠️ You have already voted!", {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
       return;
     }
-
-    const newVotes = { ...votes };
-    if (!newVotes[matchId]) {
-      newVotes[matchId] = { A: 0, B: 0 };
-    }
-    newVotes[matchId][option] += 1;
-
-    setVotes(newVotes);
-    setHasVoted({ ...hasVoted, [matchId]: true });
-    toast.success('Vote counted!');
+  
+    // Ensure the match document exists first, create if needed
+    await setDoc(matchRef, {
+      optionA: match.optionA,
+      optionB: match.optionB,
+      A: 0,
+      B: 0,
+      title: match.title,
+      timestamp: new Date()
+    }, { merge: true });
+  
+    // Now increment the selected vote
+    await updateDoc(matchRef, {
+      [option]: increment(1),
+    });
+  
+    await setDoc(userVoteDoc, { voted: true });
+  
+    setVotes((prevVotes) => {
+      const updatedVotes = { ...prevVotes };
+      if (!updatedVotes[matchId]) {
+        updatedVotes[matchId] = { A: 0, B: 0 };
+      }
+      updatedVotes[matchId][option]++;
+      localStorage.setItem('votes_battlezone', JSON.stringify(updatedVotes));
+      return updatedVotes;
+    });
+  
+    setVotedMatches((prevVotedMatches) => {
+      const updatedVotedMatches = { ...prevVotedMatches };
+      updatedVotedMatches[matchId] = true;
+      localStorage.setItem('voted_battlezone', JSON.stringify(updatedVotedMatches));
+      return updatedVotedMatches;
+    });
+  
+    const votedOption = option === 'A' ? match.optionA : match.optionB;
+    toast.success(`🎉 You voted for ${votedOption}!`, {
+      position: "top-center",
+      autoClose: 2500,
+      theme: "colored",
+    });
   };
+  
+
 
   return (
     <div className="battlezone">
-      {battlezoneMatches.map((match) => (
-        <div className="match-card" key={match.id}>
-          <h2>{match.title}</h2>
+      <h2>WWE FAN BATTLEZONE</h2>
+      <p>Vote for your favorites!</p>
+
+      {battleZoneMatches.map((match) => (
+        <div key={match.id} className="match-card">
+          <h3>{match.title}</h3>
           <div className="options">
-            <div
-              className={`option ${hasVoted[match.id] ? 'voted' : ''}`}
-              onClick={() => handleVote(match.id, 'A')}
-            >
-              <img src={match.imgA} alt={match.optionA} />
-              <p>{match.optionA}</p>
-              {iAdmin && <p>{votes[match.id]?.A || 0} Votes</p>}
-            </div>
-            <div
-              className={`option ${hasVoted[match.id] ? 'voted' : ''}`}
-              onClick={() => handleVote(match.id, 'B')}
-            >
-              <img src={match.imgB} alt={match.optionB} />
-              <p>{match.optionB}</p>
-              {iAdmin && <p>{votes[match.id]?.B || 0} Votes</p>}
-            </div>
-          </div>
+  <div className={`option ${votedMatches[match.id] ? 'voted' : ''}`} onClick={() => handleVote(match.id, 'A', match)}>
+    <img src={match.imgA} alt={match.optionA} />
+    <p>{match.optionA}</p>
+  </div>
+  <div className={`option ${votedMatches[match.id] ? 'voted' : ''}`} onClick={() => handleVote(match.id, 'B', match)}>
+    <img src={match.imgB} alt={match.optionB} />
+    <p>{match.optionB}</p>
+  </div>
+</div>
+{votedMatches[match.id] && (
+  <div className="vote-results">
+    <p>✅ You have already voted!</p>
+  </div>
+)}
+
         </div>
       ))}
     </div>
   );
-};
 
+};
 export default BattlezonePage;
