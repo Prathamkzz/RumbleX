@@ -29,7 +29,7 @@ export default function PLELiveDashboard() {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [floatingEmojis, setFloatingEmojis] = useState([]);
-  const [isLive, setIsLive] = useState(true);
+  const [isLive, setIsLive] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const [reactionTimestamps, setReactionTimestamps] = useState([]);
 
