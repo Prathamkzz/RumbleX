@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import './BattleZonePage.css';
-
 import battleZoneMatches from './BattleZoneData';
 import { toast } from 'react-toastify';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -10,35 +9,29 @@ import {
   updateDoc,
   getDoc,
   setDoc,
-  collection,
+
   increment,
 } from 'firebase/firestore';
 
 const BattlezonePage = () => {
-  const [votes, setVotes] = useState({});
   const [votedMatches, setVotedMatches] = useState({});
-  const [isUserSignedIn, setIsUserSignedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [votes, setVotes] = useState({});
+  const adminUID = "bwelAGLpfgdKs2Gcl4xcPYhUU8F3"; // Replace this
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setIsUserSignedIn(!!user);
-
-      const savedVotes = JSON.parse(localStorage.getItem('votes_battlezone')) || {};
+      setCurrentUser(user);
       const savedVotedMatches = JSON.parse(localStorage.getItem('voted_battlezone')) || {};
-      setVotes(savedVotes);
       let updatedVotedMatches = { ...savedVotedMatches };
 
       if (user) {
         const userId = user.uid;
 
-        // Check Firestore for each match if user has voted
         for (const match of battleZoneMatches) {
-          const matchRef = doc(db, 'votes_battlezone_matches', match.id);
-          const votedUsersRef = collection(matchRef, 'votedUsers');
-          const userVoteDoc = doc(votedUsersRef, userId);
+          const userVoteDoc = doc(db, `votes_battlezone_matches/${match.id}/votedUsers`, userId);
           const snapshot = await getDoc(userVoteDoc);
-
           if (snapshot.exists()) {
             updatedVotedMatches[match.id] = true;
           }
@@ -46,6 +39,23 @@ const BattlezonePage = () => {
 
         setVotedMatches(updatedVotedMatches);
         localStorage.setItem('voted_battlezone', JSON.stringify(updatedVotedMatches));
+
+        // If admin, load all vote counts
+        if (user.uid === adminUID) {
+          let allVotes = {};
+          for (const match of battleZoneMatches) {
+            const matchRef = doc(db, 'votes_battlezone_matches', match.id);
+            const matchSnap = await getDoc(matchRef);
+            if (matchSnap.exists()) {
+              const data = matchSnap.data();
+              allVotes[match.id] = {
+                A: data.A || 0,
+                B: data.B || 0,
+              };
+            }
+          }
+          setVotes(allVotes);
+        }
       }
     });
 
@@ -67,10 +77,9 @@ const BattlezonePage = () => {
 
     const userId = user.uid;
     const matchRef = doc(db, 'votes_battlezone_matches', matchId);
-    const votedUsersRef = collection(matchRef, 'votedUsers');
-    const userVoteDoc = doc(votedUsersRef, userId);
-
+    const userVoteDoc = doc(matchRef, 'votedUsers', userId);
     const userVoteSnapshot = await getDoc(userVoteDoc);
+
     if (userVoteSnapshot.exists()) {
       toast.error("⚠️ You have already voted!", {
         position: "top-center",
@@ -80,7 +89,6 @@ const BattlezonePage = () => {
       return;
     }
 
-    // Ensure the match document exists first
     await setDoc(
       matchRef,
       {
@@ -94,29 +102,16 @@ const BattlezonePage = () => {
       { merge: true }
     );
 
-    // Increment the selected vote
     await updateDoc(matchRef, {
       [option]: increment(1),
     });
 
-    // Mark user as voted
     await setDoc(userVoteDoc, { voted: true });
 
-    // Update UI and localStorage
-    setVotes((prevVotes) => {
-      const updatedVotes = { ...prevVotes };
-      if (!updatedVotes[matchId]) {
-        updatedVotes[matchId] = { A: 0, B: 0 };
-      }
-      updatedVotes[matchId][option]++;
-      localStorage.setItem('votes_battlezone', JSON.stringify(updatedVotes));
-      return updatedVotes;
-    });
-
-    setVotedMatches((prevVotedMatches) => {
-      const updatedVotedMatches = { ...prevVotedMatches, [matchId]: true };
-      localStorage.setItem('voted_battlezone', JSON.stringify(updatedVotedMatches));
-      return updatedVotedMatches;
+    setVotedMatches((prev) => {
+      const updated = { ...prev, [matchId]: true };
+      localStorage.setItem('voted_battlezone', JSON.stringify(updated));
+      return updated;
     });
 
     const votedOption = option === 'A' ? match.optionA : match.optionB;
@@ -131,6 +126,8 @@ const BattlezonePage = () => {
     <div className="battlezone">
       <h2>WWE FAN BATTLEZONE</h2>
       <p>Vote for your favorites!</p>
+
+      {!currentUser && <div>Please sign in to vote!</div>}
 
       {battleZoneMatches.map((match) => (
         <div key={match.id} className="match-card">
@@ -151,9 +148,12 @@ const BattlezonePage = () => {
               <p>{match.optionB}</p>
             </div>
           </div>
-          {votedMatches[match.id] && (
+
+          {currentUser?.uid === adminUID && votes[match.id] && (
             <div className="vote-results">
-              <p>✅ You have already voted!</p>
+              <p>🗳️ Admin View:</p>
+              <p>{match.optionA}: {votes[match.id].A} votes</p>
+              <p>{match.optionB}: {votes[match.id].B} votes</p>
             </div>
           )}
         </div>
