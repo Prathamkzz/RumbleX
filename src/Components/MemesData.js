@@ -46,7 +46,7 @@
     },
     {
       id: 5,
-      title: "Logan: ‘I’m Famous!’ Jey: *Superkick*",
+      title: "Logan: ‘I’m Famous’ Jey: *Superkick*",
       caption: "TikTok ends. Title reign begins.",
       image: "/images/JEY.jpg",
       likes: 0,
