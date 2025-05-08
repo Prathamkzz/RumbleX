@@ -9,15 +9,13 @@ import {
   updateDoc,
   getDoc,
   setDoc,
-
   increment,
 } from 'firebase/firestore';
 
 const BattlezonePage = () => {
   const [votedMatches, setVotedMatches] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
-  const [votes, setVotes] = useState({});
-  const adminUID = "bwelAGLpfgdKs2Gcl4xcPYhUU8F3"; // Replace this
+  
 
   useEffect(() => {
     const auth = getAuth();
@@ -39,23 +37,6 @@ const BattlezonePage = () => {
 
         setVotedMatches(updatedVotedMatches);
         localStorage.setItem('voted_battlezone', JSON.stringify(updatedVotedMatches));
-
-        // If admin, load all vote counts
-        if (user.uid === adminUID) {
-          let allVotes = {};
-          for (const match of battleZoneMatches) {
-            const matchRef = doc(db, 'votes_battlezone_matches', match.id);
-            const matchSnap = await getDoc(matchRef);
-            if (matchSnap.exists()) {
-              const data = matchSnap.data();
-              allVotes[match.id] = {
-                A: data.A || 0,
-                B: data.B || 0,
-              };
-            }
-          }
-          setVotes(allVotes);
-        }
       }
     });
 
@@ -149,13 +130,7 @@ const BattlezonePage = () => {
             </div>
           </div>
 
-          {currentUser?.uid === adminUID && votes[match.id] && (
-            <div className="vote-results">
-              <p>🗳️ Admin View:</p>
-              <p>{match.optionA}: {votes[match.id].A} votes</p>
-              <p>{match.optionB}: {votes[match.id].B} votes</p>
-            </div>
-          )}
+          {/* Removed the vote display for admin */}
         </div>
       ))}
     </div>
