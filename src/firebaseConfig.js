@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAVYkFFwrPqh5ifHS1mFHOHmqwogyGIP6I",
@@ -18,6 +19,7 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Auth
 const auth = getAuth(app);
 const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // Set persistence to local so the user stays signed in after page refresh
 setPersistence(auth, browserLocalPersistence)
@@ -34,5 +36,6 @@ export const signInWithGoogle = async () => {
   const result = await signInWithPopup(auth, provider);
   return result.user; // Return the signed-in user
 };
+
 
 export { auth, db, signInWithPopup, GoogleAuthProvider };

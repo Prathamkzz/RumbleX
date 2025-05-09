@@ -1,0 +1,135 @@
+/* Main profile card */
+.profile-card {
+  max-width: 500px;
+  margin: 40px auto;
+  background: linear-gradient(135deg, #181a20 80%, #b87333 100%);
+  padding: 32px;
+  border-radius: 18px;
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  border: 2px solid #ffd700;
+}
+
+/* User info */
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  border: 3px solid #ffd700;
+  box-shadow: 0 2px 8px #b8733355;
+}
+
+.profile-name {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #ffd700, #b87333);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.profile-email {
+  color: #ffd700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+/* Section divider */
+.profile-divider {
+  margin: 24px 0;
+  border: none;
+  border-top: 1.5px solid #333;
+}
+
+/* Buttons */
+.profile-btn,
+.profile-btn-secondary {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 6px 8px 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.profile-btn {
+  background: linear-gradient(90deg, #ffd700, #b87333);
+  color: #181a20;
+}
+
+.profile-btn:hover {
+  background: #ffd700;
+  color: #181a20;
+}
+
+.profile-btn-secondary {
+  background: #222;
+  color: #ffd700;
+  border: 1px solid #ffd700;
+}
+
+.profile-btn-secondary:hover {
+  background: #b87333;
+  color: #fff;
+}
+
+/* Social links */
+.profile-social-links a {
+  color: #ffd700;
+  margin-right: 18px;
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.profile-social-links a:hover {
+  color: #b87333;
+  text-decoration: underline;
+}
+
+/* Edit social form */
+.profile-social-form input[type="url"] {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ffd700;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  background: #222;
+  color: #fff;
+}
+
+.profile-social-form button {
+  padding: 6px 14px;
+  border-radius: 5px;
+  border: none;
+  background: #ffd700;
+  color: #181a20;
+  font-weight: 500;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.profile-social-form button:hover {
+  background: #b87333;
+  color: #fff;
+}
+
+/* Password message */
+.profile-password-msg {
+  color: #ffd700;
+  margin-top: 8px;
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .profile-card {
+    padding: 16px;
+  }
+  .profile-name {
+    font-size: 1.3rem;
+  }
+}

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { auth } from './firebaseConfig';
 import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebaseConfig';
 import SignInModal from './Components/SignInModal';
 import './Components/CSS/App.css';
 import VoteHub from './Components/VoteHub';
@@ -12,7 +14,7 @@ import BattlezonePage from './Components/BattleZonePage';
 import News from './Components/News';
 import NewsArticle from './Components/NewsArticle';
 import NewsDetail from './Components/NewsDetail';
-import Memes from './Pages/Memes';
+import Profile from './Components/Profile';
 import PredictionsPage from './Components/PredictionsPage';
 import OurPredictionsHub from './Components/OurPredictionsHub';
 import PlePage from './Components/PlePage';
@@ -36,12 +38,6 @@ function Home() {
       </a>
       <h2 style={{ textAlign: "center", marginTop: "20px" }}>Welcome to RumbleX 👋</h2>
 
-      <section id="featured-meme">
-        <h2>WWE Memes That Hit Hard! 🔥 </h2>
-        <a href="/memes">
-          <img src="/images/MEMES.png" alt="Featured Meme" style={{ width: "100%", maxWidth: "600px" }} />
-        </a>
-      </section>
 
       <section id="top-wwe-news">
         <h2>📰 Top WWE News</h2>
@@ -110,28 +106,33 @@ We do not claim ownership of any WWE trademarks or materials, nor are we attempt
 
 function App() {
   const [user, setUser] = useState(null);
+  const [username, setUsername] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [, setIsEventLive] = useState(false); // Track event status
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   
   
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        const docRef = doc(db, 'users', currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUsername(docSnap.data().username || '');
+        } else {
+          setUsername('');
+        }
+      } else {
+        setUsername('');
+      }
     });
     return () => unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-    } catch (error) {
-      console.error("Error signing out:", error.message);
-    }
-  };
-
+  
   useEffect(() => {
     // Example: Simulate getting live event status
     const fetchEventStatus = () => {
@@ -165,7 +166,7 @@ function App() {
             </h2>
             <ul className="nav-links">
               <li><Link to="/">Home</Link></li>
-              <li><Link to="/memes">Memes</Link></li>
+             
               <li><Link to="/predictions">Predictions</Link></li>
               <li><Link to="/show-timings">Show Timings</Link></li>
               <li><Link to="/news">News</Link></li>
@@ -184,10 +185,47 @@ function App() {
                 )}
               </>
             ) : (
-              <div className="user-section" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <button onClick={handleSignOut} style={{ background: "none", color: "white", border: "1px solid white", padding: "5px 10px", borderRadius: "5px", cursor: "pointer" }}>
-                  Sign Out
+              <div className="profile-section" style={{ position: "relative" }}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  style={{
+                    background: "none",
+                    color: "white",
+                    border: "1px solid white",
+                    padding: "5px 10px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px"
+                  }}
+                >
+                  <img
+                    src={user.photoURL || "/images/default-avatar.png"}
+                    alt="User Avatar"
+                    style={{ width: "30px", height: "30px", borderRadius: "50%" }}
+                  />
+                  {username ? `@${username}` : (user.displayName || user.email)}
                 </button>
+                {isDropdownOpen && (
+                  <div className="profile-dropdown">
+                    <ul style={{ listStyle: "none", margin: 0, padding: "10px" }}>
+                      <li style={{ padding: "5px 0", cursor: "pointer" }}>
+                        <Link to="/profile" style={{ textDecoration: "none", color: "black" }}>Profile</Link>
+                      </li>
+                      <li
+                        style={{ padding: "5px 0", cursor: "pointer" }}
+                        onClick={async () => {
+                          await signOut(auth);
+                          setUser(null);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        Sign Out
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -195,7 +233,7 @@ function App() {
 
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/memes" element={<Memes user={user} />} />
+         
           <Route path="/predictions" element={<PredictionsPage />} />
           <Route path="/predictions/votehub" element={<VoteHub user={user} />} />
           <Route path="/predictions/vote/:ple" element={<PlePage user={user} />} />
@@ -213,7 +251,7 @@ function App() {
           
           <Route path="/live-ples/:pleId" element={<PleLiveDashboard />} />
           <Route path="/live-ples" element={ <LivePlePage /> } />
-
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<div style={{ color: 'white', textAlign: 'center' }}>404 - Page Not Found</div>} />
         </Routes>
         <p className="disclaimer">

@@ -18,6 +18,8 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+
+
 /* Container */
 .container {
   padding: 20px;
@@ -132,6 +134,21 @@ nav ul li a:hover {
 }
 
 .user-dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 150px;
   display: block;
 }
 
