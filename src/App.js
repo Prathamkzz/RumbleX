@@ -26,41 +26,61 @@ import './Components/Sidebar.css';
 import LivePlePage from './Components/LivePlePage';
 import PleLiveDashboard from './Components/PleLiveDashboard';
 
-
 function Home() {
   return (
     <div>
       <Sidebar />
-      <a href="/" style={{ textDecoration: "none" }}>
+      <Link to="/" style={{ textDecoration: "none" }}>
         <div style={{ textAlign: "center", marginTop: "20px" }}>
           <img src="/images/RX.png" alt="RumbleX Logo" style={{ height: "80px", marginBottom: "10px" }} />
         </div>
-      </a>
+      </Link>
       <h2 style={{ textAlign: "center", marginTop: "20px" }}>Welcome to RumbleX 👋</h2>
-
 
       <section id="top-wwe-news">
         <h2>📰 Top WWE News</h2>
-        <a href="/news">
-          <img src="/images/NEWS.jpg" alt="Top WWE News" style={{ width: "100%", maxWidth: "600px" }} />
+        <Link to="/news">
+          <img src="/images/NEWS.jpg" alt="Top WWE News" style={{ width: "100%", maxWidth: "600px", cursor: "pointer" }} />
           <p><strong>Breaking News: Latest WWE Updates and Surprises Unfolding!</strong></p>
-        </a>
+        </Link>
       </section>
 
       <section id="match-predictions">
         <h2>🔮 Match Predictions</h2>
-        <a href="/predictions">
-          <img src="/images/PRED.jpg" alt="Match Predictions" style={{ width: "100%", maxWidth: "600px" }} />
+        <Link to="/predictions">
+          <img src="/images/PRED.jpg" alt="Match Predictions" style={{ width: "100%", maxWidth: "600px", cursor: "pointer" }} />
           <p>Who will win? Cena or Orton — Vote now!</p>
-        </a>
+        </Link>
       </section>
 
       <section id="next-wwe-show">
         <h2>🕒 Next WWE Show</h2>
-        <a href="/show-timings">
-          <img src="/images/123.webp" alt="Next WWE Show" style={{ width: "100%", maxWidth: "600px" }} />
+        <Link to="/show-timings">
+          <img src="/images/123.webp" alt="Next WWE Show" style={{ width: "100%", maxWidth: "600px", cursor: "pointer" }} />
           <p>WWE Raw starts in: <strong>(TAP TO KNOW)</strong></p>
-        </a>
+        </Link>
+      </section>
+      
+      {/* Live PLEs Section */}
+      <section className="home-section">
+        <h2>🔴 Live PLEs</h2>
+        <Link to="/live-ples">
+          <img src="/images/Backlash.jpg" alt="Live PLEs" style={{ width: "100%", maxWidth: "600px", cursor: "pointer" }} />
+        </Link>
+        <Link to="/live-ples" className="home-section-link">
+          Go to Live PLEs
+        </Link>
+      </section>
+
+      {/* Battlezone Section */}
+      <section className="home-section">
+        <h2>⚔️ Fan Battlezone</h2>
+        <Link to="/battlezone">
+          <img src="/images/21.jpg" alt="BattleZone" style={{ width: "100%", maxWidth: "600px", cursor: "pointer" }} />
+        </Link>
+        <Link to="/battlezone" className="home-section-link">
+          Enter Battlezone
+        </Link>
       </section>
     </div>
   );
