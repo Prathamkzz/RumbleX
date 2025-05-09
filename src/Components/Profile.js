@@ -5,7 +5,7 @@ import { auth } from '../firebaseConfig';
 import { doc, getDoc, setDoc, query, where, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; // Make sure you export db from your firebase config
 import { storage } from '../firebaseConfig';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import './Profile.css'; // Import your CSS file for styling
 
 function Profile() {
@@ -25,11 +25,13 @@ function Profile() {
 
   // Username state
   const [username, setUsername] = useState('');
+
   const [usernameInput, setUsernameInput] = useState('');
   const [editingUsername, setEditingUsername] = useState(false);
   const [usernameMsg, setUsernameMsg] = useState('');
 
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [photoURL, setPhotoURL] = useState(user?.photoURL || "/images/default-avatar.png");
 
@@ -129,7 +131,10 @@ function Profile() {
       }
       // Save username to Firestore
       const docRef = doc(db, 'users', user.uid);
-      await setDoc(docRef, { username: desiredUsername }, { merge: true });
+      await setDoc(docRef, {
+        username: desiredUsername,
+        email: user.email // <-- add this line
+      }, { merge: true });
       setUsername(desiredUsername);
       setEditingUsername(false);
       setUsernameMsg('Username updated!');
@@ -172,17 +177,36 @@ function Profile() {
     setUploading(true);
     try {
       const storageRef = ref(storage, `avatars/${user.uid}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      // Save photoURL to Firestore and update auth profile
-      const docRef = doc(db, 'users', user.uid);
-      await setDoc(docRef, { photoURL: url }, { merge: true });
-      await user.updateProfile({ photoURL: url });
-      window.location.reload(); // Refresh to show new avatar
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          alert("Failed to upload avatar.");
+          setUploading(false);
+        },
+        async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          const docRef = doc(db, 'users', user.uid);
+          await setDoc(docRef, {
+            photoURL: url,
+            email: user.email // <-- add this line
+          }, { merge: true });
+          await user.updateProfile({ photoURL: url });
+          setUploadProgress(100);
+          setUploading(false);
+          setTimeout(() => {
+            window.location.reload();
+          }, 700); // Show 100% for 0.7s before reload
+        }
+      );
     } catch (err) {
       alert("Failed to upload avatar.");
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   return (
@@ -212,6 +236,11 @@ function Profile() {
             disabled={uploading}
           />
         </label>
+        {uploading && (
+          <div style={{ color: "#ffd700", marginTop: 8 }}>
+            Upload Progress: {uploadProgress.toFixed(0)}%
+          </div>
+        )}
       </div>
       <h2 className="profile-name">{user?.displayName || "Fan"}</h2>
       <div style={{
@@ -371,6 +400,40 @@ function Profile() {
             <div className="profile-password-msg">{socialMsg}</div>
           </>
         )}
+      </div>
+
+      {/* 7. Pops Section */}
+      <hr className="profile-divider" />
+      <div>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 28,
+              height: 28,
+              background: 'linear-gradient(135deg, gold 60%, orange 100%)',
+              borderRadius: '50%',
+              boxShadow: '0 0 6px gold',
+              textAlign: 'center',
+              lineHeight: '28px',
+              fontWeight: 'bold',
+              fontSize: 18,
+              color: '#fff',
+              border: '2px solid #fff'
+            }}
+          >
+            ✨
+          </span>
+          Pops
+        </h3>
+        <div style={{ fontWeight: 'bold', fontSize: 18, color: '#ffd700', marginBottom: 6 }}>
+          {/* You may want to fetch and display the user's actual Pops count here */}
+          {/* Example: {pops} Pops */}
+        </div>
+        <p style={{ color: '#ccc', fontSize: '1rem', marginBottom: 0 }}>
+          Pops are points you earn as you engage with this website. While they currently can't be redeemed or used anywhere, we encourage you to keep collecting them because You'll... <br />
+          <span style={{ color: '#ffd700', fontWeight: 'bold' }}>YOU'LL NEVER SEE IT COMING</span>
+        </p>
       </div>
     </div>
   );

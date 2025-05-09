@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { auth } from './firebaseConfig';
 import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import SignInModal from './Components/SignInModal';
 import './Components/CSS/App.css';
@@ -21,15 +21,13 @@ import PlePage from './Components/PlePage';
 import OURPLEPAGES from './Components/OURPLEPAGES';
 import ShowTimings from './Components/ShowTimings';
 import Sidebar from './Components/Sidebar';
-import './Components/Sidebar.css';
-
 import LivePlePage from './Components/LivePlePage';
 import PleLiveDashboard from './Components/PleLiveDashboard';
 
-function Home() {
+function Home({ pops }) {
   return (
     <div>
-      <Sidebar />
+      <Sidebar pops={pops} />
       <Link to="/" style={{ textDecoration: "none" }}>
         <div style={{ textAlign: "center", marginTop: "20px" }}>
           <img src="/images/RX.png" alt="RumbleX Logo" style={{ height: "80px", marginBottom: "10px" }} />
@@ -89,24 +87,20 @@ function Home() {
 function About() {
   return (
     <div>
-      
-      <p><section className="about-section">
-  <h2>About Us</h2>
-  <p>
-    Welcome to <strong>RUMBLEX</strong> – We’re a community-powered hub made by fans, for fans of WWE. From live match reactions to polls, fan predictions, memes, and even a career mode fantasy journey—our goal is to turn your WWE obsession into an interactive experience.
-
-This platform brings fans together during premimun-Live-Events (PLEs), where you can:
-  </p>
-  <ul>
-    <li>🔥 React in real-time</li>
-    <li>🗣️ Chat with other fans live</li>
-    <li>🧠 Vote on match polls</li>
-  </ul>
-  <p>
-    We’re not just watching—<em>we’re living the action together!</em>
-  </p>
-</section>
-</p>
+      <section className="about-section">
+        <h2>About Us</h2>
+        <p>
+          Welcome to <strong>RUMBLEX</strong> – We’re a community-powered hub made by fans, for fans of WWE. From live match reactions to polls, fan predictions, memes, and even a career mode fantasy journey—our goal is to turn your WWE obsession into an interactive experience.
+        </p>
+        <ul>
+          <li>🔥 React in real-time</li>
+          <li>🗣️ Chat with other fans live</li>
+          <li>🧠 Vote on match polls</li>
+        </ul>
+        <p>
+          We’re not just watching—<em>we’re living the action together!</em>
+        </p>
+      </section>
     </div>
   );
 }
@@ -130,9 +124,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [, setIsEventLive] = useState(false); // Track event status
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  
-  
+  const [pops, setPops] = useState(0);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -140,26 +132,37 @@ function App() {
       if (currentUser) {
         const docRef = doc(db, 'users', currentUser.uid);
         const docSnap = await getDoc(docRef);
+        let pops = 0;
+        let lastLoginDate = '';
         if (docSnap.exists()) {
-          setUsername(docSnap.data().username || '');
+          const data = docSnap.data();
+          setUsername(data.username || '');
+          pops = data.pops || 0;
+          lastLoginDate = data.lastLoginDate || '';
         } else {
           setUsername('');
         }
+        // Daily login bonus logic
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        if (lastLoginDate !== today) {
+          pops += 1;
+          await setDoc(docRef, { pops, lastLoginDate: today }, { merge: true });
+        }
+        setPops(pops);
       } else {
         setUsername('');
+        setPops(0);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  
   useEffect(() => {
     // Example: Simulate getting live event status
     const fetchEventStatus = () => {
       // Simulated check for event live status
       setIsEventLive(true); // You would dynamically fetch this
     };
-    
     fetchEventStatus(); // This function will update the event status
   }, []);
 
@@ -186,7 +189,6 @@ function App() {
             </h2>
             <ul className="nav-links">
               <li><Link to="/">Home</Link></li>
-             
               <li><Link to="/predictions">Predictions</Link></li>
               <li><Link to="/show-timings">Show Timings</Link></li>
               <li><Link to="/news">News</Link></li>
@@ -226,6 +228,24 @@ function App() {
                     style={{ width: "30px", height: "30px", borderRadius: "50%" }}
                   />
                   {username ? `@${username}` : (user.displayName || user.email)}
+                  <span style={{
+                    display: 'inline-block',
+                    width: 24,
+                    height: 24,
+                    background: 'linear-gradient(135deg, gold 60%, orange 100%)',
+                    borderRadius: '50%',
+                    boxShadow: '0 0 6px gold',
+                    marginLeft: 8,
+                    textAlign: 'center',
+                    lineHeight: '24px',
+                    fontWeight: 'bold',
+                    fontSize: 15,
+                    color: '#fff',
+                    border: '2px solid #fff'
+                  }}>
+                    ✨
+                  </span>
+                  <span style={{ fontWeight: 'bold', fontSize: 15, color: '#ffd700', marginLeft: 2 }}>{pops}</span>
                 </button>
                 {isDropdownOpen && (
                   <div className="profile-dropdown">
@@ -252,8 +272,7 @@ function App() {
         </nav>
 
         <Routes>
-          <Route path="/" element={<Home />} />
-         
+          <Route path="/" element={<Home pops={pops} />} />
           <Route path="/predictions" element={<PredictionsPage />} />
           <Route path="/predictions/votehub" element={<VoteHub user={user} />} />
           <Route path="/predictions/vote/:ple" element={<PlePage user={user} />} />
@@ -266,20 +285,16 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/battlezone" element={<BattlezonePage isSignedIn={!!user} user={user} />} />
-
           <Route path="/match/:pleId/:matchId" element={<MatchDetails />} />
-          
           <Route path="/live-ples/:pleId" element={<PleLiveDashboard />} />
           <Route path="/live-ples" element={ <LivePlePage /> } />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<div style={{ color: 'white', textAlign: 'center' }}>404 - Page Not Found</div>} />
         </Routes>
         <p className="disclaimer">
-        This website is for entertainment purposes only. Not affiliated with WWE.
-      </p>
-    </div>
-      
-      
+          This website is for entertainment purposes only. Not affiliated with WWE.
+        </p>
+      </div>
     </Router>
   );
 }

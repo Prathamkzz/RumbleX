@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function Sidebar({ isOpen, toggleSidebar }) {
+
+function Sidebar({ isOpen, toggleSidebar, pops }) {
   return (
     <div
       style={{
@@ -17,6 +18,27 @@ function Sidebar({ isOpen, toggleSidebar }) {
         padding: '20px'
       }}
     >
+      <div className="pops-display" style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+        {/* Custom Pops Icon */}
+        <span style={{
+          display: 'inline-block',
+          width: 28,
+          height: 28,
+          background: 'linear-gradient(135deg, gold 60%, orange 100%)',
+          borderRadius: '50%',
+          boxShadow: '0 0 6px gold',
+          marginRight: 8,
+          textAlign: 'center',
+          lineHeight: '28px',
+          fontWeight: 'bold',
+          fontSize: 18,
+          color: '#fff',
+          border: '2px solid #fff'
+        }}>
+          ✨
+        </span>
+        <span style={{ fontWeight: 'bold', fontSize: 18, color: '#ffd700' }}>{pops} Pops</span>
+      </div>
       <h4>Sidebar Menu</h4>
       <ul>
         <li><Link to="/" onClick={toggleSidebar}>Home</Link></li>

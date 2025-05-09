@@ -11,6 +11,10 @@ import {
 } from 'firebase/firestore';
 import './PleLiveDashboard.css';
 import InactivePle from './InactivePle';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 const EMOJIS = ['🔥', '😂', '😱', '👏', '👎'];
 
@@ -18,8 +22,18 @@ export default function PLELiveDashboard() {
   const { pleId } = useParams();
   const db = getFirestore();
 
+  // FIX: Track user state with onAuthStateChanged
+  const [user, setUser] = useState(() => getAuth().currentUser);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const [cooldown, setCooldown] = useState(false);
-  const [toast, setToast] = useState(null);
   const [votedPolls, setVotedPolls] = useState(() => {
     const stored = localStorage.getItem('votedPolls');
     return stored ? JSON.parse(stored) : [];
@@ -29,7 +43,7 @@ export default function PLELiveDashboard() {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [floatingEmojis, setFloatingEmojis] = useState([]);
-  const [isLive, setIsLive] = useState(false);
+  const [isLive, setIsLive] = useState(true);
   const [countdown, setCountdown] = useState(null);
   const [reactionTimestamps, setReactionTimestamps] = useState([]);
 
@@ -101,21 +115,23 @@ export default function PLELiveDashboard() {
   }, [db, pleId]);
 
   const handleReact = (emoji, event) => {
+    if (!user) {
+      toast.info("Please sign in to react!");
+      return;
+    }
     const now = Date.now();
     const recent = reactionTimestamps.filter((t) => now - t < 30000);
     if (recent.length >= 10) {
       setCooldown(true);
-      setToast("🚫 10 reactions per 30s limit!");
+      toast.info("🚫 10 reactions per 30s limit!");
       setTimeout(() => {
         setCooldown(false);
-        setToast(null);
       }, 3000);
       return;
     }
 
     setReactionTimestamps([...recent, now]);
-    setToast(`You reacted with ${emoji}`);
-    setTimeout(() => setToast(null), 2000);
+    toast.info(`You reacted with ${emoji}`);
 
     const position = {
       top: event.clientY - 20,
@@ -125,9 +141,14 @@ export default function PLELiveDashboard() {
   };
 
   const handlePollVote = async (pollId, optionIndex) => {
+    if (!user) {
+      toast.info("Please sign in to vote!");
+      return;
+    }
+
     const poll = pollQuestions.find((p) => p.id === pollId);
     if (!poll || votedPolls.includes(pollId)) {
-      alert("You’ve already voted!");
+      toast.info("You’ve already voted!");
       return;
     }
 
@@ -148,6 +169,10 @@ export default function PLELiveDashboard() {
   };
 
   const handleSendMessage = async () => {
+    if (!user) {
+      toast.info("Please sign in to chat!");
+      return;
+    }
     if (message.trim()) {
       try {
         await addDoc(collection(db, 'chatRooms', pleId, 'messages'), {
@@ -162,109 +187,111 @@ export default function PLELiveDashboard() {
   };
 
   return (
-    <div className="dashboard-container">
-      <h2 className="dashboard-title">Backlash</h2>
+    <>
+      <ToastContainer position="top-center" autoClose={2000} />
+      <div className="dashboard-container">
+        <h2 className="dashboard-title">Backlash</h2>
 
-      {!isLive && (
-        <div className="countdown">
-          <h3>Countdown to Live: {countdown}</h3>
-        </div>
-      )}
+        {!isLive && (
+          <div className="countdown">
+            <h3>Countdown to Live: {countdown}</h3>
+          </div>
+        )}
 
-      {isLive ? (
-        <>
-          <section className="live-chat-container">
-            <h3 className="section-title">💬 Live Chat</h3>
-            <div className="messages">
-              {messages.length > 0 ? (
-                messages.map((msg, index) => (
-                  <div key={index} className="live-message">{msg}</div>
-                ))
-              ) : (
-                <p>No messages yet</p>
+        {isLive ? (
+          <>
+            <section className="live-chat-container">
+              <h3 className="section-title">💬 Live Chat</h3>
+              <div className="messages">
+                {messages.length > 0 ? (
+                  messages.map((msg, index) => (
+                    <div key={index} className="live-message">{msg}</div>
+                  ))
+                ) : (
+                  <p>No messages yet</p>
+                )}
+              </div>
+              <div className="live-chat-input">
+                <input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Send a message..."
+                />
+                <button onClick={handleSendMessage}>Send</button>
+              </div>
+            </section>
+
+            <section className="reactions-section">
+              <h3 className="section-title">🔥 Live Reactions</h3>
+              <div className="reactions">
+                {EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={(event) => handleReact(emoji, event)}
+                    className="reaction-btn"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+              {cooldown && (
+                <p className="cooldown-msg">🚫 Limit reached – try again in a moment!</p>
               )}
-            </div>
-            <div className="live-chat-input">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Send a message..."
-              />
-              <button onClick={handleSendMessage}>Send</button>
-            </div>
-          </section>
+            </section>
 
-          <section className="reactions-section">
-            <h3 className="section-title">🔥 Live Reactions</h3>
-            <div className="reactions">
-              {EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={(event) => handleReact(emoji, event)}
-                  className="reaction-btn"
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-            {cooldown && (
-              <p className="cooldown-msg">🚫 Limit reached – try again in a moment!</p>
-            )}
-            {toast && <div className="toast">{toast}</div>}
-          </section>
-
-          <section className="polls-section">
-            <h3 className="section-title">🧐 Live Polls</h3>
-            {pollQuestions.length > 0 ? (
-              pollQuestions.map((poll) => {
-                const total = (poll.votes || []).reduce((a, b) => a + b, 0);
-                return (
-                  <div key={poll.id} className="poll-container">
-                    <div className="poll-question">{poll.question}</div>
-                    {(poll.options || []).map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handlePollVote(poll.id, index)}
-                        disabled={votedPolls.includes(poll.id)}
-                        className={`poll-button ${votedPolls.includes(poll.id) ? 'voted' : ''}`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                    <div className="poll-progress">
-                      {(poll.votes || []).map((vote, index) => {
-                        const percent = total ? (vote / total) * 100 : 0;
-                        return (
-                          <div
-                            key={index}
-                            className="poll-bar"
-                            style={{ width: `${percent}%` }}
-                          />
-                        );
-                      })}
+            <section className="polls-section">
+              <h3 className="section-title">🧐 Live Polls</h3>
+              {pollQuestions.length > 0 ? (
+                pollQuestions.map((poll) => {
+                  const total = (poll.votes || []).reduce((a, b) => a + b, 0);
+                  return (
+                    <div key={poll.id} className="poll-container">
+                      <div className="poll-question">{poll.question}</div>
+                      {(poll.options || []).map((option, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handlePollVote(poll.id, index)}
+                          disabled={votedPolls.includes(poll.id)}
+                          className={`poll-button ${votedPolls.includes(poll.id) ? 'voted' : ''}`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                      <div className="poll-progress">
+                        {(poll.votes || []).map((vote, index) => {
+                          const percent = total ? (vote / total) * 100 : 0;
+                          return (
+                            <div
+                              key={index}
+                              className="poll-bar"
+                              style={{ width: `${percent}%` }}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p>No polls available</p>
-            )}
-          </section>
-        </>
-      ) : (
-        <InactivePle />
-      )}
+                  );
+                })
+              ) : (
+                <p>No polls available</p>
+              )}
+            </section>
+          </>
+        ) : (
+          <InactivePle />
+        )}
 
-      {floatingEmojis.map(({ emoji, position, id }) => (
-        <div
-          key={id}
-          className="emoji-float"
-          style={{ top: `${position.top}px`, left: `${position.left}px` }}
-        >
-          {emoji}
-        </div>
-      ))}
-    </div>
+        {floatingEmojis.map(({ emoji, position, id }) => (
+          <div
+            key={id}
+            className="emoji-float"
+            style={{ top: `${position.top}px`, left: `${position.left}px` }}
+          >
+            {emoji}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
