@@ -25,6 +25,7 @@ function Profile() {
 
   // Username state
   const [username, setUsername] = useState('');
+  const [usernameInput, setUsernameInput] = useState('');
   const [editingUsername, setEditingUsername] = useState(false);
   const [usernameMsg, setUsernameMsg] = useState('');
 
@@ -60,6 +61,7 @@ function Profile() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUsername(data.username || '');
+          setUsernameInput(data.username || '');
         }
       };
       fetchUsername();
@@ -105,7 +107,7 @@ function Profile() {
   const handleSaveUsername = async (e) => {
     e.preventDefault();
     if (!user) return;
-    const desiredUsername = username.trim().toLowerCase();
+    const desiredUsername = usernameInput.trim().toLowerCase();
     if (!desiredUsername.match(/^[a-z0-9_.]{3,20}$/)) {
       setUsernameMsg('Username must be 3-20 chars, a-z, 0-9, _ or .');
       return;
@@ -128,6 +130,7 @@ function Profile() {
       // Save username to Firestore
       const docRef = doc(db, 'users', user.uid);
       await setDoc(docRef, { username: desiredUsername }, { merge: true });
+      setUsername(desiredUsername);
       setEditingUsername(false);
       setUsernameMsg('Username updated!');
       setTimeout(() => setUsernameMsg(''), 2000);
@@ -234,8 +237,8 @@ function Profile() {
           <form onSubmit={handleSaveUsername} style={{ marginBottom: 8 }}>
             <input
               type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
+              value={usernameInput}
+              onChange={e => setUsernameInput(e.target.value)}
               placeholder="Choose a unique username"
               style={{
                 padding: '8px',
