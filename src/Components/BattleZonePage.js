@@ -46,7 +46,7 @@ const BattlezonePage = () => {
   const handleVote = async (matchId, option, match) => {
     const auth = getAuth();
     const user = auth.currentUser;
-
+  
     if (!user) {
       toast.error("⚠️ Please Sign In to Vote!", {
         position: "top-center",
@@ -55,12 +55,12 @@ const BattlezonePage = () => {
       });
       return;
     }
-
+  
     const userId = user.uid;
     const matchRef = doc(db, 'votes_battlezone_matches', matchId);
     const userVoteDoc = doc(matchRef, 'votedUsers', userId);
     const userVoteSnapshot = await getDoc(userVoteDoc);
-
+  
     if (userVoteSnapshot.exists()) {
       toast.error("⚠️ You have already voted!", {
         position: "top-center",
@@ -69,7 +69,7 @@ const BattlezonePage = () => {
       });
       return;
     }
-
+  
     await setDoc(
       matchRef,
       {
@@ -82,19 +82,39 @@ const BattlezonePage = () => {
       },
       { merge: true }
     );
-
+  
     await updateDoc(matchRef, {
       [option]: increment(1),
     });
-
+  
     await setDoc(userVoteDoc, { voted: true });
-
+  
+    // --- Award 5 pops for this unique vote ---
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    let pops = userSnap.exists() && userSnap.data().pops ? userSnap.data().pops : 0;
+    let votedBattlezonePolls = userSnap.exists() && userSnap.data().votedBattlezonePolls ? userSnap.data().votedBattlezonePolls : [];
+    if (!votedBattlezonePolls.includes(matchId)) {
+      votedBattlezonePolls.push(matchId);
+      pops += 5;
+      await setDoc(userRef, {
+        pops,
+        votedBattlezonePolls
+      }, { merge: true });
+      toast.info("Wow, you've earned 5 pop(s)!", {
+        position: "top-center",
+        autoClose: 2500,
+        theme: "colored",
+      });
+    }
+    // --- End pops awarding ---
+  
     setVotedMatches((prev) => {
       const updated = { ...prev, [matchId]: true };
       localStorage.setItem('voted_battlezone', JSON.stringify(updated));
       return updated;
     });
-
+  
     const votedOption = option === 'A' ? match.optionA : match.optionB;
     toast.success(`🎉 You voted for ${votedOption}!`, {
       position: "top-center",
@@ -102,7 +122,7 @@ const BattlezonePage = () => {
       theme: "colored",
     });
   };
-
+  
   return (
     <div className="battlezone">
       <h2>WWE FAN BATTLEZONE</h2>

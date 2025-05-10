@@ -7,7 +7,7 @@ import { db } from './firebaseConfig';
 import SignInModal from './Components/SignInModal';
 import './Components/CSS/App.css';
 import VoteHub from './Components/VoteHub';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MatchDetails from './Components/MatchDetails';
 import BattlezonePage from './Components/BattleZonePage';
@@ -34,7 +34,6 @@ function Home({ pops }) {
         </div>
       </Link>
       <h2 style={{ textAlign: "center", marginTop: "20px" }}>Welcome to RumbleX 👋</h2>
-
       <section id="top-wwe-news">
         <h2>📰 Top WWE News</h2>
         <Link to="/news">
@@ -42,7 +41,6 @@ function Home({ pops }) {
           <p><strong>Breaking News: Latest WWE Updates and Surprises Unfolding!</strong></p>
         </Link>
       </section>
-
       <section id="match-predictions">
         <h2>🔮 Match Predictions</h2>
         <Link to="/predictions">
@@ -50,7 +48,6 @@ function Home({ pops }) {
           <p>Who will win? Cena or Orton — Vote now!</p>
         </Link>
       </section>
-
       <section id="next-wwe-show">
         <h2>🕒 Next WWE Show</h2>
         <Link to="/show-timings">
@@ -58,8 +55,6 @@ function Home({ pops }) {
           <p>WWE Raw starts in: <strong>(TAP TO KNOW)</strong></p>
         </Link>
       </section>
-      
-      {/* Live PLEs Section */}
       <section className="home-section">
         <h2>🔴 Live PLEs</h2>
         <Link to="/live-ples">
@@ -69,8 +64,6 @@ function Home({ pops }) {
           Go to Live PLEs
         </Link>
       </section>
-
-      {/* Battlezone Section */}
       <section className="home-section">
         <h2>⚔️ Fan Battlezone</h2>
         <Link to="/battlezone">
@@ -122,7 +115,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [, setIsEventLive] = useState(false); // Track event status
+  const [, setIsEventLive] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [pops, setPops] = useState(0);
 
@@ -142,8 +135,7 @@ function App() {
         } else {
           setUsername('');
         }
-        // Daily login bonus logic
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const today = new Date().toISOString().slice(0, 10);
         if (lastLoginDate !== today) {
           pops += 1;
           await setDoc(docRef, { pops, lastLoginDate: today }, { merge: true });
@@ -158,12 +150,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Example: Simulate getting live event status
     const fetchEventStatus = () => {
-      // Simulated check for event live status
-      setIsEventLive(true); // You would dynamically fetch this
+      setIsEventLive(true);
     };
-    fetchEventStatus(); // This function will update the event status
+    fetchEventStatus();
   }, []);
 
   return (
@@ -198,7 +188,34 @@ function App() {
               <li><Link to="/disclaimer">Disclaimer</Link></li>
             </ul>
           </div>
-          <div className="auth-section">
+          <div className="auth-section" style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <button
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'Join RumbleX!',
+                    text: 'Check out this awesome WWE fan site!',
+                    url: window.location.origin,
+                  });
+                } else {
+                  navigator.clipboard.writeText(window.location.origin);
+                  toast.info('Link copied to clipboard!');
+                }
+              }}
+              style={{
+                background: 'linear-gradient(135deg, gold 60%, orange 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                padding: '8px 16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                marginRight: 8
+              }}
+              title="Share this website"
+            >
+              🔗 Share
+            </button>
             {!user ? (
               <>
                 <button className="sign-in-btn" onClick={() => setIsModalOpen(true)}>Sign In</button>
@@ -270,7 +287,6 @@ function App() {
             )}
           </div>
         </nav>
-
         <Routes>
           <Route path="/" element={<Home pops={pops} />} />
           <Route path="/predictions" element={<PredictionsPage />} />

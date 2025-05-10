@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { pleData, matchesByPle } from './MatchesData';
 import { toast } from 'react-toastify';
 import './CSS/MatchStyles.css';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
 
 const PlePage = ({ user }) => {
   const { ple } = useParams();
@@ -24,7 +26,7 @@ const PlePage = ({ user }) => {
     }
   }, [ple]);
 
-  const handleVote = (matchId, wrestler) => {
+  const handleVote = async (matchId, wrestler) => {
     if (!user) {
       toast.error('⚠️ Please Sign In to Vote!', {
         position: 'top-center',
@@ -33,7 +35,7 @@ const PlePage = ({ user }) => {
       });
       return;
     }
-
+  
     // Prevent double vote
     if (votedMatches[matchId] === true) {
       toast.warn("❗ You've already voted in this match!", {
@@ -43,12 +45,36 @@ const PlePage = ({ user }) => {
       });
       return;
     }
-
+  
     // Update localStorage
     const updated = { ...votedMatches, [matchId]: true };
     localStorage.setItem(`votedMatches_${ple}`, JSON.stringify(updated));
     setVotedMatches(updated);
-
+  
+    // --- Award 5 pops for this unique vote ---
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      let pops = userSnap.exists() && userSnap.data().pops ? userSnap.data().pops : 0;
+      let votedPredictionPolls = userSnap.exists() && userSnap.data().votedPredictionPolls ? userSnap.data().votedPredictionPolls : [];
+      if (!votedPredictionPolls.includes(matchId)) {
+        votedPredictionPolls.push(matchId);
+        pops += 5;
+        await setDoc(userRef, {
+          pops,
+          votedPredictionPolls
+        }, { merge: true });
+        toast.info("Wow, you've earned 5 pop(s)!", {
+          position: "top-center",
+          autoClose: 2500,
+          theme: "colored",
+        });
+      }
+    } catch (err) {
+      // Optional: handle error
+    }
+    // --- End pops awarding ---
+  
     toast.success(`🎉 You voted for ${wrestler}!`, {
       position: 'top-center',
       autoClose: 2500,

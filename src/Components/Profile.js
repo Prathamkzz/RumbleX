@@ -1,12 +1,12 @@
-// filepath: d:\vortexo\src\Components\Profile.js
 import React, { useState, useEffect } from 'react';
 import { signOut, updatePassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { doc, getDoc, setDoc, query, where, collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; // Make sure you export db from your firebase config
+import { db } from '../firebaseConfig';
 import { storage } from '../firebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import './Profile.css'; // Import your CSS file for styling
+import './Profile.css';
+import { toast } from 'react-toastify';
 
 function Profile() {
   const user = auth.currentUser;
@@ -25,7 +25,6 @@ function Profile() {
 
   // Username state
   const [username, setUsername] = useState('');
-
   const [usernameInput, setUsernameInput] = useState('');
   const [editingUsername, setEditingUsername] = useState(false);
   const [usernameMsg, setUsernameMsg] = useState('');
@@ -34,6 +33,9 @@ function Profile() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [photoURL, setPhotoURL] = useState(user?.photoURL || "/images/default-avatar.png");
+
+  // Pops state
+  const [pops, setPops] = useState(0);
 
   // Load social links from Firestore
   useEffect(() => {
@@ -54,19 +56,20 @@ function Profile() {
     }
   }, [user]);
 
-  // Load username from Firestore
+  // Load username and pops from Firestore
   useEffect(() => {
     if (user) {
-      const fetchUsername = async () => {
+      const fetchUserData = async () => {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUsername(data.username || '');
           setUsernameInput(data.username || '');
+          setPops(data.pops || 0);
         }
       };
-      fetchUsername();
+      fetchUserData();
     }
   }, [user]);
 
@@ -133,7 +136,7 @@ function Profile() {
       const docRef = doc(db, 'users', user.uid);
       await setDoc(docRef, {
         username: desiredUsername,
-        email: user.email // <-- add this line
+        email: user.email
       }, { merge: true });
       setUsername(desiredUsername);
       setEditingUsername(false);
@@ -193,19 +196,33 @@ function Profile() {
           const docRef = doc(db, 'users', user.uid);
           await setDoc(docRef, {
             photoURL: url,
-            email: user.email // <-- add this line
+            email: user.email
           }, { merge: true });
           await user.updateProfile({ photoURL: url });
           setUploadProgress(100);
           setUploading(false);
           setTimeout(() => {
             window.location.reload();
-          }, 700); // Show 100% for 0.7s before reload
+          }, 700);
         }
       );
     } catch (err) {
       alert("Failed to upload avatar.");
       setUploading(false);
+    }
+  };
+
+  // Share button handler
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join RumbleX!',
+        text: 'Check out my profile and join the WWE fan community!',
+        url: window.location.origin,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.origin);
+      toast.info('Link copied to clipboard!');
     }
   };
 
@@ -257,6 +274,26 @@ function Profile() {
             : ""}
       </div>
       <p className="profile-email">{user?.email}</p>
+
+      {/* Share Button */}
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
+        <button
+          onClick={handleShare}
+          style={{
+            background: 'linear-gradient(135deg, gold 60%, orange 100%)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            padding: '8px 16px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+          title="Share your profile"
+        >
+          🔗 Share
+        </button>
+      </div>
+
       <hr className="profile-divider" />
 
       {/* Username Section */}
@@ -427,11 +464,10 @@ function Profile() {
           Pops
         </h3>
         <div style={{ fontWeight: 'bold', fontSize: 18, color: '#ffd700', marginBottom: 6 }}>
-          {/* You may want to fetch and display the user's actual Pops count here */}
-          {/* Example: {pops} Pops */}
+          {pops} Pops
         </div>
         <p style={{ color: '#ccc', fontSize: '1rem', marginBottom: 0 }}>
-          Pops are points you earn as you engage with this website. While they currently can't be redeemed or used anywhere, we encourage you to keep collecting them because You'll... <br />
+          Pops are points you earn as you engage with this website. While they currently can't be redeemed or used anywhere, we encourage you to keep collecting them because you'll...<br />
           <span style={{ color: '#ffd700', fontWeight: 'bold' }}>YOU'LL NEVER SEE IT COMING</span>
         </p>
       </div>
