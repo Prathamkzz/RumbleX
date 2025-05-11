@@ -57,7 +57,7 @@ export default function PLELiveDashboard() {
   }, [db, pleId]);
 
   useEffect(() => {
-    const countdownEndTime = new Date('2025-05-11T04:30:00+05:30').getTime();
+    const countdownEndTime = new Date('2025-06-08T04:30:00+05:30').getTime();
 
     const interval = setInterval(() => {
       const timeLeft = countdownEndTime - Date.now();
@@ -190,7 +190,7 @@ export default function PLELiveDashboard() {
     <>
       <ToastContainer position="top-center" autoClose={2000} />
       <div className="dashboard-container">
-        <h2 className="dashboard-title">Backlash</h2>
+        <h2 className="dashboard-title">Money In The Bank</h2>
 
         {!isLive && (
           <div className="countdown">

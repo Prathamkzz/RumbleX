@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import './InactivePle.css';
 
 export default function InactivePLE() {
   const [timeLeft, setTimeLeft] = useState(null);
+  const [notified, setNotified] = useState(false);
 
   useEffect(() => {
-    const eventDate = new Date('2025-05-11T04:30:00');
+    const eventDate = new Date('2025-06-08T04:30:00');
     const interval = setInterval(() => {
       const now = new Date();
       const difference = eventDate - now;
@@ -22,48 +24,42 @@ export default function InactivePLE() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleNotify = () => {
+    setNotified(true);
+    setTimeout(() => setNotified(false), 3000);
+  };
+
   return (
-    <div
-      style={{
-        textAlign: 'center',
-        padding: '30px',
-        color: '#fff',
-        background: 'linear-gradient(to right, #1e1e2f, #2a2a40)',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: "'Orbitron', sans-serif"
-      }}
-    >
-      <h2 style={{ fontSize: '2rem', marginBottom: '15px' }}>Backlash isn't live now.</h2>
+    <div className="inactive-ple-bg">
+      <h2 className="inactive-ple-title">MITB isn't live now.</h2>
 
       <img
-        src="/images/Backlash.jpg"
+        src="/images/MITB.webp"
         alt="Event Poster"
-        style={{
-          width: '100%',
-          maxWidth: '450px',
-          marginBottom: '25px',
-          borderRadius: '12px',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.3)'
-        }}
+        className="inactive-ple-poster"
       />
 
-      <h3 style={{ fontSize: '1.7rem', marginBottom: '10px' }}>Event Countdown</h3>
-      <p
-        style={{
-          fontSize: '2rem',
-          fontWeight: 'bold',
-          background: 'linear-gradient(to right, #ff416c, #ff4b2b)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          transition: 'all 0.3s ease'
-        }}
+      <h3 className="inactive-ple-countdown-title">Event Countdown</h3>
+      <p className="inactive-ple-countdown">{timeLeft}</p>
+
+      <button
+        onClick={handleNotify}
+        disabled={notified}
+        className="inactive-ple-notify-btn"
       >
-        {timeLeft}
-      </p>
+        {notified ? 'You will be notified!' : '🔔 Notify Me When Live'}
+      </button>
+
+      <div className="inactive-ple-details">
+        <h3>Event Details</h3>
+        <ul>
+          <li><b>Date:</b> June 8, 2025</li>
+          <li><b>Start Time:</b> 4:30 AM IST</li>
+          <li><b>Location:</b>Intuit Dome, Inglewood, California.</li>
+          <li><b>How to Watch:</b> Peacock (US), Netflix (India), Netflix (Intl)</li>
+          <li><b>Hashtag:</b> #MITB2025</li>
+        </ul>
+      </div>
     </div>
   );
 }
