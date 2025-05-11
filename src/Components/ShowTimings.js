@@ -17,18 +17,18 @@ const showTimings = [
   },
   {
     show: 'SmackDown',
-    indiaTime: '2025-05-10T05:30:00',
+    indiaTime: '2025-05-17T05:30:00',
     image: '/images/SD.avif',
   },
   {
     show: 'NXT',
-    indiaTime: '2025-05-08T05:30:00',
+    indiaTime: '2025-05-15T05:30:00',
     image: '/images/NXT.jpg',
   },
   {
-    show: 'Backlash',
-    indiaTime: '2025-05-11T04:30:00',
-    image: '/images/Backlash.jpg',
+    show: 'MITB',
+    indiaTime: '2025-06-08T04:30:00',
+    image: '/images/MITB.webp',
   },
 ];
 
