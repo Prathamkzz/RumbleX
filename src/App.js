@@ -23,7 +23,7 @@ import ShowTimings from './Components/ShowTimings';
 import Sidebar from './Components/Sidebar';
 import LivePlePage from './Components/LivePlePage';
 import PleLiveDashboard from './Components/PleLiveDashboard';
-import TestYourselfRing from './Components/TestYourselfRing';
+
 
 function Home({ pops }) {
   return (
@@ -59,7 +59,7 @@ function Home({ pops }) {
       <section className="home-section">
         <h2>🔴 Live PLEs</h2>
         <Link to="/live-ples">
-          <img src="/images/Backlash.jpg" alt="Live PLEs" style={{ width: "100%", maxWidth: "600px", cursor: "pointer" }} />
+          <img src="/images/MITB.webp" alt="Live PLEs" style={{ width: "100%", maxWidth: "600px", cursor: "pointer" }} />
         </Link>
         <Link to="/live-ples" className="home-section-link">
           Go to Live PLEs
@@ -180,7 +180,7 @@ function App() {
             </h2>
             <ul className="nav-links">
               <li><Link to="/">Home</Link></li>
-              <li><Link to="/test-yourself">Test Yourself in the RING</Link></li>
+             
               <li><Link to="/predictions">Predictions</Link></li>
               <li><Link to="/show-timings">Show Timings</Link></li>
               <li><Link to="/news">News</Link></li>
@@ -291,7 +291,7 @@ function App() {
         </nav>
         <Routes>
           <Route path="/" element={<Home pops={pops} />} />
-          <Route path="/test-yourself" element={<TestYourselfRing />} />
+         
           <Route path="/predictions" element={<PredictionsPage />} />
           <Route path="/predictions/votehub" element={<VoteHub user={user} />} />
           <Route path="/predictions/vote/:ple" element={<PlePage user={user} />} />
