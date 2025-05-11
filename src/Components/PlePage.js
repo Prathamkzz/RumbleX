@@ -124,37 +124,53 @@ const PlePage = ({ user }) => {
 
                 <h3 style={{ color: 'white', marginTop: '10px' }}>{match.matchTitle}</h3>
 
-                {!hasVoted ? (
-                  <div style={{ marginTop: '20px' }}>
-                    {Object.keys(match.prediction).map((wrestler) => (
-                      <div
-                        key={wrestler}
-                        className="poll-card"
-                        onClick={() => handleVote(match.id, wrestler)}
-                      >
-                        <img
-                          src={match.wrestlerImages?.[wrestler]}
-                          alt={wrestler}
-                          className="poll-image"
-                        />
-                        <span className="poll-text">{wrestler}</span>
-                      </div>
-                    ))}
+                {pleInfo?.isPast ? (
+                  <div
+                    style={{
+                      marginTop: '20px',
+                      backgroundColor: '#1e1e1e',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid #444',
+                      color: '#f44',
+                      fontSize: '15px',
+                      fontWeight: '600'
+                    }}
+                  >
+                    🛑 Poll is finished now
                   </div>
                 ) : (
-                  <div style={{
-                    marginTop: '20px',
-                    backgroundColor: '#1e1e1e',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid #444',
-                    color: '#0f0',
-                    fontSize: '15px',
-                    fontWeight: '600'
-                  }}>
-                    ✅ Voted — Now See Our Predictions
-                  </div>
-                  
+                  !hasVoted ? (
+                    <div style={{ marginTop: '20px' }}>
+                      {Object.keys(match.prediction).map((wrestler) => (
+                        <div
+                          key={wrestler}
+                          className="poll-card"
+                          onClick={() => handleVote(match.id, wrestler)}
+                        >
+                          <img
+                            src={match.wrestlerImages?.[wrestler]}
+                            alt={wrestler}
+                            className="poll-image"
+                          />
+                          <span className="poll-text">{wrestler}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{
+                      marginTop: '20px',
+                      backgroundColor: '#1e1e1e',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '1px solid #444',
+                      color: '#0f0',
+                      fontSize: '15px',
+                      fontWeight: '600'
+                    }}>
+                      ✅ Voted — Now See Our Predictions
+                    </div>
+                  )
                 )}
               </div>
             );

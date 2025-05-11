@@ -1,11 +1,10 @@
-
 // PLE Data
 export const pleData = [
-  { id: 'ple1', name: 'Backlash', image: '/images/Backlash.jpg', areMatchesAnnounced: true },
-  { id: 'ple2', name: 'Money In The Bank', image: '/images/MITB.webp', areMatchesAnnounced: false },
-  { id: 'ple3', name: 'SummerSlam', image: '/images/SummerSlam.jpg', areMatchesAnnounced: false },
-  { id: 'ple4', name: 'Clash In Paris', image: '/images/CIP.jpg', areMatchesAnnounced: false },
-  { id: 'ple5', name: 'Survivor Series', image: '/images/SSERIES.jpg', areMatchesAnnounced: false },
+  { id: 'ple1', name: 'Backlash', image: '/images/Backlash.jpg', areMatchesAnnounced: true, isPast: true },
+  { id: 'ple2', name: 'Money In The Bank', image: '/images/MITB.webp', areMatchesAnnounced: false, isPast: false },
+  { id: 'ple3', name: 'SummerSlam', image: '/images/SummerSlam.jpg', areMatchesAnnounced: false, isPast: false },
+  { id: 'ple4', name: 'Clash In Paris', image: '/images/CIP.jpg', areMatchesAnnounced: false, isPast: false },
+  { id: 'ple5', name: 'Survivor Series', image: '/images/SSERIES.jpg', areMatchesAnnounced: false, isPast: false },
 ];
 
 // Matches By PLE
