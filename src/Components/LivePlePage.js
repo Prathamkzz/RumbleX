@@ -2,9 +2,12 @@ import { useNavigate } from 'react-router-dom';
 
 const dummyPLE = {
   id: 'ple1',
-  name: 'WrestleMania XL',
-  poster: './images/Backlash.jpg',
-  headline: 'BACKLASH'
+  name: 'PLE',
+  poster: './images/MITB.webp',
+  headline: 'MITB 2025',
+  description: 'The biggest event of the year, featuring the most electrifying matches and moments in wrestling history.',
+  date: '2025-06-08T04:30:00+05:30',
+  location: 'Las Vegas, NV',
 };
 
 export default function LivePLEPage() {
