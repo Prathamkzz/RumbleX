@@ -12,7 +12,7 @@ const convertToET = (indiaTime) => {
 const showTimings = [
   {
     show: 'RAW',
-    indiaTime: '2025-05-13T05:30:00', 
+    indiaTime: '2025-05-20T05:30:00', 
     image: '/images/123.webp',
   },
   {
