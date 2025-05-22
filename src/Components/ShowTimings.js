@@ -12,17 +12,17 @@ const convertToET = (indiaTime) => {
 const showTimings = [
   {
     show: 'RAW',
-    indiaTime: '2025-05-20T05:30:00', 
+    indiaTime: '2025-05-27T05:30:00', 
     image: '/images/123.webp',
   },
   {
     show: 'SmackDown',
-    indiaTime: '2025-05-17T05:30:00',
+    indiaTime: '2025-05-24T05:30:00',
     image: '/images/SD.avif',
   },
   {
     show: 'NXT',
-    indiaTime: '2025-05-15T05:30:00',
+    indiaTime: '2025-05-29T05:30:00',
     image: '/images/NXT.jpg',
   },
   {
