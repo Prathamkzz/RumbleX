@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -37,5 +37,20 @@ export const signInWithGoogle = async () => {
   return result.user; // Return the signed-in user
 };
 
+// Call this function when you want to update XP
+export async function updateUserXP(userId, newXP) {
+  const userRef = doc(db, 'users', userId);
+  await setDoc(userRef, { xp: newXP }, { merge: true });
+}
+
+// Call this function when you want to retrieve XP
+export async function getUserXP(userId) {
+  const userRef = doc(db, 'users', userId);
+  const docSnap = await getDoc(userRef);
+  if (docSnap.exists()) {
+    return docSnap.data().xp || 0;
+  }
+  return 0;
+}
 
 export { auth, db, signInWithPopup, GoogleAuthProvider };

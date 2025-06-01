@@ -1,12 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { signOut, updatePassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
-import { doc, getDoc, setDoc, query, where, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, query, where, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { storage } from '../firebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import './Profile.css';
 import { toast } from 'react-toastify';
+import { ACHIEVEMENTS } from './AchievementsXP';
+
+// XP/Level helpers
+function getXPForNextLevel(level) {
+  let xpNeeded = 20;
+  for (let i = 1; i < level; i++) {
+    xpNeeded = Math.floor(xpNeeded * 1.5);
+  }
+  return xpNeeded; // This return was missing!
+}
+function getLevel(xp) {
+  let level = 1;
+  let xpNeeded = 20;
+  let remainingXP = xp;
+  while (remainingXP >= xpNeeded) {
+    level++;
+    remainingXP -= xpNeeded;
+    xpNeeded = Math.floor(xpNeeded * 1.5);
+  }
+  return level;
+}
+function getXPIntoLevel(xp) {
+  let xpNeeded = 20;
+  let remainingXP = xp;
+  while (remainingXP >= xpNeeded) {
+    remainingXP -= xpNeeded;
+    xpNeeded = Math.floor(xpNeeded * 1.5);
+  }
+  return remainingXP;
+}
 
 function Profile() {
   const user = auth.currentUser;
@@ -37,6 +67,12 @@ function Profile() {
   // Pops state
   const [pops, setPops] = useState(0);
 
+  // XP state
+  const [xp, setXP] = useState(0);
+
+  // Achievements state
+  const [achievements, setAchievements] = useState([]);
+
   // Load social links from Firestore
   useEffect(() => {
     if (user) {
@@ -56,7 +92,7 @@ function Profile() {
     }
   }, [user]);
 
-  // Load username and pops from Firestore
+  // Load username, pops, and xp from Firestore
   useEffect(() => {
     if (user) {
       const fetchUserData = async () => {
@@ -67,6 +103,7 @@ function Profile() {
           setUsername(data.username || '');
           setUsernameInput(data.username || '');
           setPops(data.pops || 0);
+          setXP(data.xp || 0);
         }
       };
       fetchUserData();
@@ -86,6 +123,33 @@ function Profile() {
         }
       };
       fetchPhotoURL();
+    }
+  }, [user]);
+
+  // Replace the existing XP useEffect with this:
+  useEffect(() => {
+    if (user) {
+      const docRef = doc(db, 'users', user.uid);
+      const unsubscribe = onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setXP(data.xp || 0);
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      const docRef = doc(db, 'users', user.uid);
+      const unsubscribe = onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setAchievements(data.achievements || []);
+        }
+      });
+      return () => unsubscribe();
     }
   }, [user]);
 
@@ -470,6 +534,139 @@ function Profile() {
           Pops are points you earn as you engage with this website. While they currently can't be redeemed or used anywhere, we encourage you to keep collecting them because you'll...<br />
           <span style={{ color: '#ffd700', fontWeight: 'bold' }}>YOU'LL NEVER SEE IT COMING</span>
         </p>
+      </div>
+
+      {/* Level/XP Section */}
+      <hr className="profile-divider" />
+      <div>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 28,
+              height: 28,
+              background: 'linear-gradient(135deg, #00eaff 60%, #232347 100%)',
+              borderRadius: '50%',
+              boxShadow: '0 0 6px #00eaff',
+              textAlign: 'center',
+              lineHeight: '28px',
+              fontWeight: 'bold',
+              fontSize: 18,
+              color: '#fff',
+              border: '2px solid #fff'
+            }}
+          >
+            🏆
+          </span>
+          Level
+        </h3>
+        <div style={{ fontWeight: 'bold', fontSize: 18, color: '#00eaff', marginBottom: 6 }}>
+          {getLevel(xp)}
+        </div>
+        <div style={{ color: '#ccc', fontSize: '1rem', marginBottom: 0 }}>
+          XP: {getXPIntoLevel(xp)} / {getXPForNextLevel(getLevel(xp))}
+        </div>
+        <div style={{
+          width: '100%',
+          background: '#232347',
+          borderRadius: 8,
+          margin: '8px 0 12px 0',
+          height: 14,
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            width: `${Math.min(100, (getXPIntoLevel(xp) / getXPForNextLevel(getLevel(xp))) * 100)}%`,
+            height: '100%',
+            background: 'linear-gradient(90deg, #00eaff 40%, #ffd700 100%)',
+            borderRadius: 8,
+            transition: 'width 0.3s'
+          }} />
+        </div>
+        {getXPForNextLevel(getLevel(xp)) - getXPIntoLevel(xp) <= 5 && getXPForNextLevel(getLevel(xp)) - getXPIntoLevel(xp) > 0 && (
+          <div style={{ color: '#00eaff', fontStyle: 'italic', fontSize: 14 }}>
+            You're so close to reaching Level {getLevel(xp) + 1}! You just need {getXPForNextLevel(getLevel(xp)) - getXPIntoLevel(xp)} XP.
+          </div>
+        )}
+      </div>
+
+      {/* Achievements Section */}
+      <hr className="profile-divider" />
+      <div>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 28,
+              height: 28,
+              background: 'linear-gradient(135deg, #ff416c 60%, #ff4b2b 100%)',
+              borderRadius: '50%',
+              boxShadow: '0 0 6px #ff416c',
+              textAlign: 'center',
+              lineHeight: '28px',
+              fontWeight: 'bold',
+              fontSize: 18,
+              color: '#fff',
+              border: '2px solid #fff'
+            }}
+          >
+            🏆
+          </span>
+          Achievements
+        </h3>
+        
+        {user && (
+          <div style={{ marginTop: 12 }}>
+            {Object.values(ACHIEVEMENTS).map(achievement => {
+              const isUnlocked = achievements?.includes(achievement.id);
+              return (
+                <div
+                  key={achievement.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '8px 12px',
+                    background: isUnlocked ? '#232347' : '#1a1a2e',
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    opacity: isUnlocked ? 1 : 0.6,
+                    border: isUnlocked ? '1px solid #ff416c' : '1px solid #333'
+                  }}
+                >
+                  <span style={{ fontSize: 24 }}>{achievement.icon}</span>
+                  <div>
+                    <div style={{ 
+                      color: isUnlocked ? '#ff416c' : '#666',
+                      fontWeight: 'bold' 
+                    }}>
+                      {achievement.title}
+                    </div>
+                    <div style={{ fontSize: 14, color: '#999' }}>
+                      {achievement.description}
+                    </div>
+                    <div style={{ 
+                      fontSize: 12, 
+                      color: isUnlocked ? '#00eaff' : '#666',
+                      marginTop: 2 
+                    }}>
+                      +{achievement.xpReward} XP
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        
+        <div style={{ 
+          fontSize: 14, 
+          color: '#999', 
+          fontStyle: 'italic',
+          marginTop: 12,
+          textAlign: 'center' 
+        }}>
+          Keep playing to unlock more achievements!
+        </div>
       </div>
     </div>
   );

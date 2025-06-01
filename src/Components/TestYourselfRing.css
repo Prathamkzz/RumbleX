@@ -1,27 +1,307 @@
-.ring-section { max-width: 900px; margin: 0 auto; padding: 16px; }
-.game-list { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
-.game-card { background: #181818; border-radius: 14px; padding: 24px; width: 270px; box-shadow: 0 2px 12px #0008; text-align: center; }
-.game-card-img { width: 100px; height: 100px; object-fit: contain; margin-bottom: 12px; }
-.game-btn { background: linear-gradient(135deg, gold 60%, orange 100%); color: #fff; border: none; border-radius: 6px; padding: 10px 24px; font-weight: bold; cursor: pointer; margin-top: 12px; }
-.game-btn:disabled { background: #444; color: #bbb; cursor: not-allowed; }
-.superstar-pool { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin: 24px 0; }
-.superstar-card { background: #222; border-radius: 10px; padding: 12px; width: 110px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: border 0.2s; }
-.superstar-card.selected { border: 2px solid #ffd700; background: #333; }
-.superstar-card img { width: 60px; height: 60px; object-fit: contain; }
-.swipemania-team { max-width: 600px; margin: 0 auto; }
-.swipemania-round { max-width: 600px; margin: 0 auto; }
-.battle-row { display: flex; align-items: center; justify-content: center; margin: 24px 0; }
-.swipe-sequence { display: flex; gap: 12px; justify-content: center; font-size: 2rem; margin: 18px 0; }
-.swipe-arrow { font-size: 2.2rem; }
-.swipe-controls { display: flex; gap: 12px; justify-content: center; margin-bottom: 18px; }
-.swipe-btn { background: #222; color: #ffd700; border: 2px solid #ffd700; border-radius: 8px; padding: 8px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-.swipe-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.progress-bars { display: flex; gap: 24px; justify-content: center; margin-bottom: 12px; }
-.progress-bar { background: #333; border-radius: 6px; width: 120px; height: 10px; overflow: hidden; }
-.progress-bar-inner { background: #ffd700; height: 100%; transition: width 0.2s; }
-.round-feedback { font-size: 1.3rem; margin: 14px 0; color: #ffd700; }
-.swipemania-result { text-align: center; margin-top: 40px; }
+/* ========== GLOBAL STYLES ========== */
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif; /* Use a clean, standard font */
+  background: #181c26;
+  color: #fff;
+}
+/* ========== CONTAINER SECTIONS ========== */
+.ring-section, .swipemania-team, .swipemania-round {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ========== GAME LIST ========== */
+.game-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+/* ========== GAME CARD ========== */
+.game-card {
+  background: linear-gradient(120deg, #232347 60%, #ff416c 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #0007, 0 1.5px 8px #ffd70044;
+  padding: 28px 20px 20px 20px;
+  text-align: center;
+  color: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.game-card:hover {
+  transform: scale(1.04) rotate(-1deg);
+  box-shadow: 0 8px 32px #ff416c88, 0 1.5px 8px #ffd70077;
+}
+
+.game-card-img {
+  width: 90px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 12px #ffd70055;
+}
+
+/* ========== GAME BUTTON ========== */
+.game-btn {
+  background: linear-gradient(90deg, #ffd700 40%, #ff416c 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 32px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin: 8px 0;
+  box-shadow: 0 2px 12px #ffd70033, 0 1.5px 8px #ff416c33;
+  transition: background 0.2s, transform 0.2s;
+  letter-spacing: 1px;
+}
+
+.game-btn:active {
+  transform: scale(0.97);
+  background: linear-gradient(90deg, #ff416c 40%, #ffd700 100%);
+}
+
+.game-btn:disabled {
+  background: #444;
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+/* ========== SUPERSTAR POOL ========== */
+.superstar-pool {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns */
+  gap: 38px 32px;
+  justify-items: center;
+  align-items: start;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto 48px;
+}
+
+/* ========== SUPERSTAR CARD ========== */
+.superstar-card {
+  background: linear-gradient(120deg, #181c26 80%, #232347 100%);
+  border-radius: 18px;
+  border: 2.5px solid #232347;
+  box-shadow: 0 0 0 2px #232347, 0 8px 32px #000c;
+  width: 340px;
+  max-width: 94vw;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.18s ease-in-out;
+}
+
+.superstar-card.selected,
+.superstar-card:hover {
+  border: 2.5px solid #00eaff;
+  box-shadow: 0 0 0 4px #00eaff55, 0 8px 32px #00eaff33, 0 8px 32px #000c;
+  transform: scale(1.04);
+  z-index: 2;
+}
+
+.superstar-card.selected::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #00eaff;
+  box-shadow: 0 0 16px #00eaffcc;
+  z-index: 3;
+}
+
+.superstar-card.selected::before {
+  content: "✔";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  font-size: 2.1rem;
+  color: #181c26;
+  font-weight: 900;
+  z-index: 4;
+}
+
+/* ========== SUPERSTAR CONTENT ========== */
+.superstar-img-area {
+  width: 100%;
+  height: 72%;
+  background: #181c26;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.superstar-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 12px 12px 0 0;
+  background: #232347;
+  box-shadow: 0 0 32px #00eaff33, 0 2px 12px #0007;
+  border-bottom: 2px solid #232347;
+}
+
+.superstar-name {
+  width: 100%;
+  text-align: center;
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #e6eaf3;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 0 8px 4px;
+  text-shadow: 0 2px 12px #000a;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.superstar-stats {
+  width: 100%;
+  text-align: center;
+  font-size: 1.15rem;
+  color: #00eaff;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 0 0 18px;
+  text-shadow: 0 2px 8px #000a;
+}
+
+/* ========== LOCK TRIO BUTTON ========== */
+.lock-trio-btn {
+  display: block;
+  margin: 32px auto 0;
+  background: linear-gradient(90deg, #00eaff 0%, #232347 100%);
+  color: #e6eaf3;
+  border: 2.5px solid #00eaff;
+  border-radius: 12px;
+  padding: 22px 0;
+  width: 420px;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  box-shadow: 0 0 0 2px #232347, 0 8px 32px #00eaff33, 0 8px 32px #000c;
+  transition: all 0.18s ease-in-out;
+  cursor: pointer;
+}
+
+.lock-trio-btn:disabled {
+  background: #232347;
+  color: #bfc6d5;
+  border: 2.5px solid #232347;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.lock-trio-btn:hover:enabled {
+  background: linear-gradient(90deg, #232347 0%, #00eaff 100%);
+  color: #00eaff;
+  box-shadow: 0 0 0 6px #00eaff55, 0 8px 32px #00eaff33, 0 8px 32px #000c;
+}
+
+/* ========== RESPONSIVE BREAKPOINTS ========== */
 @media (max-width: 700px) {
-  .game-list { flex-direction: column; align-items: center; }
-  .battle-row { flex-direction: column; gap: 12px; }
+  .superstar-card {
+    width: 340px; /* Maintain consistent width */
+    height: 500px; /* Maintain consistent height */
+  }
+
+  .lock-trio-btn {
+    width: 340px;
+    font-size: 1.4rem;
+    padding: 16px 0;
+  }
+}
+
+/* ========== ANIMATIONS & MISC ========== */
+@keyframes popIn {
+  0% { transform: scale(0.7) rotate(-8deg); opacity: 0; }
+  80% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.swipemania-botreveal,
+.swipemania-faceoff,
+.swipemania-result {
+  animation: popIn 0.6s cubic-bezier(.68,-0.55,.27,1.55);
+}
+
+/* ========== PROGRESS BAR ========== */
+.progress-bars {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 14px;
+  background: #232347;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px #ffd70033;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700 40%, #ff416c 100%);
+  border-radius: 8px;
+  transition: width 0.3s ease-in-out;
+}
+
+/* ========== FEEDBACK & SWIPE ========== */
+.round-feedback {
+  font-size: 1.3rem;
+  margin: 14px 0;
+  color: #ffd700;
+}
+
+.swipe-sequence {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 18px 0;
+}
+
+.swipe-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.swipe-btn {
+  background: #222;
+  color: #ffd700;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.swipe-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

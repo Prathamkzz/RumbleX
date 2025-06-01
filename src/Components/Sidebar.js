@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 
-function Sidebar({ isOpen, toggleSidebar, pops }) {
+function Sidebar({ isOpen, toggleSidebar, pops, level }) {
   return (
     <div
       style={{
@@ -38,6 +38,26 @@ function Sidebar({ isOpen, toggleSidebar, pops }) {
           ✨
         </span>
         <span style={{ fontWeight: 'bold', fontSize: 18, color: '#ffd700' }}>{pops} Pops</span>
+      </div>
+      <div className="profile-section" style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+        <span className="profile-pops" style={{ fontWeight: 'bold', color: '#ffd700', fontSize: 17 }}>
+          Pops: {pops}
+        </span>
+        <span
+          className="profile-level"
+          style={{
+            marginLeft: 14,
+            background: 'linear-gradient(90deg, #ffd700 60%, #ff416c 100%)',
+            color: '#232347',
+            fontWeight: 900,
+            borderRadius: 12,
+            padding: '3px 14px',
+            fontSize: 15,
+            boxShadow: '0 2px 8px #ffd70055'
+          }}
+        >
+          Level {level}
+        </span>
       </div>
       <h4>Sidebar Menu</h4>
       <ul>
